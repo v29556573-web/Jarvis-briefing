@@ -3,6 +3,7 @@ name: JARVIS Morning Briefing
 on:
   schedule:
     - cron: "13 6 * * *"
+    - cron: "7 13 * * *"   # ~16:07 МСК — перед открытием NYSE
   workflow_dispatch: {}
 
 jobs:
