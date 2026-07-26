@@ -2,7 +2,7 @@ name: JARVIS Morning Briefing
 
 on:
   schedule:
-    - cron: "7 5 * * *"
+    - cron: "13 6 * * *"
   workflow_dispatch: {}
 
 jobs:
