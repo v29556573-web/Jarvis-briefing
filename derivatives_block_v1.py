@@ -130,13 +130,21 @@ def get_funding_history(inst_id: str, limit: int = 42) -> list[float]:
     return [float(r["fundingRate"]) * 100 for r in reversed(rows)]  # от старых к новым
 
 
-def get_ticker_vol(inst_id: str) -> float | None:
-    """24ч объём в quote-валюте (USDT) для инструмента (спот или своп)."""
+def get_ticker_vol_and_price(inst_id: str) -> tuple[float | None, float | None]:
+    """24ч объём (volCcy24h) и последняя цена для инструмента."""
     resp = safe_get(f"{OKX_BASE}/api/v5/market/ticker", {"instId": inst_id})
     rows = okx_data_rows(resp)
     if not rows:
-        return None
-    return float(rows[0]["volCcy24h"])
+        return None, None
+    vol = float(rows[0]["volCcy24h"])
+    last = float(rows[0]["last"])
+    return vol, last
+
+
+def get_ticker_vol(inst_id: str) -> float | None:
+    """24ч объём в quote-валюте (USDT) — только для SPOT, где volCcy24h честно в quote."""
+    vol, _ = get_ticker_vol_and_price(inst_id)
+    return vol
 
 
 def get_top_trader_ratio_okx(ccy: str) -> float | None:
@@ -281,17 +289,31 @@ def build_asset_block(symbol: str) -> dict:
     ccy, swap_id, spot_id, coinm_id = mapping
     tier = tier_of(symbol)
 
-    oi_now = get_oi_current(swap_id)
-    oi_hist = get_oi_history(ccy, days=30)
-    oi_change = oi_pct_change_24h(oi_hist, oi_now) if oi_now is not None else None
-    oi_z = rolling_zscore(oi_hist, oi_now) if oi_now is not None else None
+    # ВАЖНО: oi_now (эндпоинт /public/open-interest, в контрактах) и oi_hist
+    # (эндпоинт /rubik/.../open-interest-volume, в USD-номинале) — РАЗНЫЕ
+    # единицы измерения. Нельзя сравнивать их напрямую (даёт мусорные
+    # -99% "изменения"). Поэтому % и Z-score считаем ТОЛЬКО внутри
+    # самосогласованной rubik-серии, а oi_now показываем отдельно как
+    # сырое значение в контрактах (не участвует в расчёте изменения).
+    oi_now = get_oi_current(swap_id)  # контракты — для справки, в change/Z не участвует
+    oi_hist = get_oi_history(ccy, days=30)  # USD-номинал, самосогласованная серия
+    oi_hist_current = oi_hist[-1] if oi_hist else None
+    oi_hist_ref = oi_hist[-2] if len(oi_hist) >= 2 else None
+    oi_change = None
+    if oi_hist_current is not None and oi_hist_ref not in (None, 0):
+        oi_change = (oi_hist_current - oi_hist_ref) / oi_hist_ref * 100
+    oi_z = rolling_zscore(oi_hist[:-1], oi_hist_current) if oi_hist_current is not None else None
 
     funding_now = get_funding_now(swap_id)
     funding_hist = get_funding_history(swap_id)
     funding_ewma_val = ewma(funding_hist) if funding_hist else None
 
     spot_vol = get_ticker_vol(spot_id)
-    perp_vol = get_ticker_vol(swap_id)
+    perp_vol_raw, perp_last_price = get_ticker_vol_and_price(swap_id)
+    # ЭМПИРИЧЕСКИ ПОДТВЕРЖДЕНО (26.07.2026, сверка с CoinGlass): на SWAP-инструментах
+    # OKX volCcy24h фактически в БАЗОВОЙ валюте (напр. BTC), а не в quote (USDT),
+    # в отличие от SPOT, где оно честно в quote. Поэтому конвертируем в USD вручную.
+    perp_vol = (perp_vol_raw * perp_last_price) if (perp_vol_raw and perp_last_price) else None
 
     top_trader_okx = get_top_trader_ratio_okx(ccy)
     oi_coinm = get_oi_current(coinm_id) if coinm_id else None
