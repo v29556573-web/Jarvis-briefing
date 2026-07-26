@@ -1,0 +1,22 @@
+name: Test Derivatives Block
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  test-run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run derivatives block (test, BTC/ETH/HYPE only)
+        run: python derivatives_block_v1.py BTC ETH HYPE
