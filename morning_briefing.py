@@ -12,6 +12,7 @@
 import os
 import sys
 import requests
+import derivatives_block_v1 as deriv
 
 MEXC_BASE = "https://api.mexc.com/api/v3"
 
@@ -54,6 +55,59 @@ def format_position_line(symbol: str, price: float) -> str:
         f"  От entry: {pnl_pct:+.2f}% | До стопа: {to_stop_pct:.2f}% | R: {r_multiple:+.2f}"
     )
 
+DERIVATIVES_SYMBOLS = ["BTC", "ETH", "HYPE"]  # расширь при желании (ONDO, LINK, SOL...)
+
+SCENARIO_ICONS = {
+    "A_HEALTHY_TREND": "🔵",
+    "B_SQUEEZE_SETUP": "🔴",
+    "SHORT_SQUEEZE_RISK": "🔴",
+    "NEUTRAL": "⚪",
+    "INSUFFICIENT_DATA": "⚪",
+}
+
+
+def format_derivatives_section(symbols=None) -> str:
+    symbols = symbols or DERIVATIVES_SYMBOLS
+    lines = ["📊 *Derivatives / Positioning (Section 10)*\n"]
+    for symbol in symbols:
+        try:
+            block = deriv.build_asset_block(symbol)
+        except Exception as e:
+            lines.append(f"*{symbol}*: ошибка сбора данных ({e})")
+            continue
+
+        if "error" in block:
+            lines.append(f"*{symbol}*: [ДАННЫЕ НЕ ПРЕДОСТАВЛЕНЫ — {block['error']}]")
+            continue
+
+        icon = SCENARIO_ICONS.get(block.get("scenario"), "⚪")
+        lines.append(f"{icon} *{symbol}* — {block.get('scenario', 'N/A')}")
+
+        if block.get("source") == "hyperliquid_native":
+            lines.append(
+                f"  OI: {block['openInterest_tokens']:,.0f} токенов | "
+                f"Funding: {block['funding_pct_8h']:+.4f}%/8ч"
+            )
+        else:
+            oi_change = block.get("oi_change_24h_pct")
+            oi_z = block.get("oi_zscore_30d")
+            funding = block.get("funding_now_pct_8h")
+            spr = block.get("spot_perp_volume_ratio")
+            lines.append(
+                f"  OI Δ24ч: {oi_change if oi_change is not None else 'н/д'}% "
+                f"(Z: {oi_z if oi_z is not None else 'н/д'}) | "
+                f"Funding: {funding if funding is not None else 'н/д'}%/8ч"
+            )
+            if spr is not None:
+                warn = " ⚠️ деривативы доминируют" if block.get("spot_perp_dominated_warning") else ""
+                lines.append(f"  Spot/Perp vol ratio: {spr}{warn}")
+
+        note = block.get("note")
+        if note:
+            lines.append(f"  _{note}_")
+        lines.append("")
+
+    return "\n".join(lines)
 
 def build_message() -> str:
     lines = ["🌅 *Утренний брифинг JARVIS*\n"]
@@ -77,6 +131,7 @@ def build_message() -> str:
         if pos_line:
             lines.append(pos_line)
         lines.append("")
+    lines.append(format_derivatives_section())
 
     return "\n".join(lines)
 
