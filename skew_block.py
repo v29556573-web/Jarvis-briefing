@@ -69,7 +69,15 @@ def pick_target_expiry(instruments):
     return min(expiries, key=lambda ts: abs(ts - target_ms))
 
 
-def get_ticker(instrument_name):
+def get_index_price(index_name="btc_usd") -> float | None:
+    """Реальная споты-цена через специально предназначенный эндпоинт —
+    ИСПРАВЛЕНО: /public/get_instruments НЕ отдаёт underlying_price для
+    опционов (это только метаданные страйк/экспирация), из-за чего v1
+    ошибочно откатывался на произвольный страйк середины списка."""
+    result, err = safe_get(f"{DERIBIT_BASE}/public/get_index_price", {"index_name": index_name})
+    if err or not result:
+        return None
+    return result.get("index_price")
     result, err = safe_get(f"{DERIBIT_BASE}/public/ticker", {"instrument_name": instrument_name})
     if err:
         return None, err
@@ -98,7 +106,11 @@ def find_25delta_skew(currency="BTC"):
 
     # Ограничиваем диапазон страйков вокруг споты, чтобы не дергать сотни тикеров:
     # берём страйки в пределах +-25% от текущей споты (делта ~0.25 обычно там).
-    underlying_price = expiry_instruments[0].get("underlying_price") or calls[len(calls) // 2]["strike"]
+    # ИСПРАВЛЕНО: реальная споты-цена через /public/get_index_price,
+    # а не через несуществующее поле underlying_price в get_instruments
+    underlying_price = get_index_price("btc_usd")
+    if underlying_price is None:
+        return None, "get_index_price failed — не удалось получить реальную цену BTC"
     lo, hi = underlying_price * 0.75, underlying_price * 1.25
     calls = [c for c in calls if lo <= c["strike"] <= hi]
     puts = [p for p in puts if lo <= p["strike"] <= hi]
