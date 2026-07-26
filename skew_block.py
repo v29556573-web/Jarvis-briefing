@@ -78,6 +78,9 @@ def get_index_price(index_name="btc_usd") -> float | None:
     if err or not result:
         return None
     return result.get("index_price")
+
+
+def get_ticker(instrument_name):
     result, err = safe_get(f"{DERIBIT_BASE}/public/ticker", {"instrument_name": instrument_name})
     if err:
         return None, err
