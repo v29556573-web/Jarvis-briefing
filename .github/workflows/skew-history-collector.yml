@@ -1,0 +1,35 @@
+name: Skew History Collector
+
+permissions:
+  contents: write
+
+on:
+  schedule:
+    - cron: "17 6 * * *"   # раз в сутки, ~09:17 МСК — вместе с утренним брифингом
+  workflow_dispatch: {}
+
+jobs:
+  collect-skew:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Collect BTC skew data point
+        run: python skew_block.py
+
+      - name: Commit skew history
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add skew_history.json
+          git diff --staged --quiet || git commit -m "Daily skew history point"
+          git push
