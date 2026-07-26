@@ -1,0 +1,35 @@
+name: CME-OKX Spread Monitor
+
+permissions:
+  contents: write
+
+on:
+  schedule:
+    - cron: "23 * * * *"   # каждый час, в :23 (не круглая минута — меньше конкуренции в очереди)
+  workflow_dispatch: {}
+
+jobs:
+  check-spread:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install requests yfinance
+
+      - name: Run CME-OKX spread check
+        run: python cme_okx_spread.py
+
+      - name: Commit spread history
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add cme_okx_spread_history.json
+          git diff --staged --quiet || git commit -m "Update CME-OKX spread history"
+          git push
