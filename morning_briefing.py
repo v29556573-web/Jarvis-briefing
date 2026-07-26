@@ -16,12 +16,11 @@ import requests
 MEXC_BASE = "https://api.mexc.com/api/v3"
 
 # --- Настрой под свои текущие открытые позиции ---
-SYMBOLS = ["BTCUSDT", "LTCUSDT", "ETCUSDT"]
+SYMBOLS = ["BTCUSDT"]
 
 POSITIONS = {
     "BTCUSDT": {"side": "long", "entry": 62737, "stop": 61096, "target": 67067},
     # Добавляй/убирай по мере открытия-закрытия позиций
-    # "LTCUSDT": {"side": "short", "entry": 44.13, "stop": 47.17},
 }
 # ---------------------------------------------------
 
