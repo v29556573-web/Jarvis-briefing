@@ -20,7 +20,7 @@ MEXC_BASE = "https://api.mexc.com/api/v3"
 SYMBOLS = ["BTCUSDT"]
 
 POSITIONS = {
-    "BTCUSDT": {"side": "long", "entry": 62737, "stop": 61096, "target": 67067},
+    "BTCUSDT": {"side": "long", "entry": 62737, "stop": 62163, "target": 67067},
     # Добавляй/убирай по мере открытия-закрытия позиций
 }
 # ---------------------------------------------------
