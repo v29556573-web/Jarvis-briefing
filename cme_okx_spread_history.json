@@ -214,5 +214,11 @@
     "cme_price": 64840.0,
     "okx_price": 64438.0,
     "spread_pct": 0.6239
+  },
+  {
+    "ts_utc": "2026-08-05T20:45:46Z",
+    "cme_price": 65185.0,
+    "okx_price": 64942.1,
+    "spread_pct": 0.374
   }
 ]
