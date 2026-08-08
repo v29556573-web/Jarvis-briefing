@@ -1,0 +1,51 @@
+{
+  "timestamp_utc": "2026-08-08T13:43:03.803922+00:00",
+  "lookback_days": 7,
+  "chains": {
+    "Base": {
+      "stablecoin_mcap": {
+        "old_usd": 4752416389.0,
+        "new_usd": 4818646241.5,
+        "pct_change": 1.39
+      },
+      "tvl": {
+        "old_usd": 4508292656,
+        "new_usd": 4676310572,
+        "pct_change": 3.73
+      },
+      "dominance": {
+        "shares_pct": {
+          "USDC": 86.61
+        },
+        "grand_total_usd": 4811622136.64
+      },
+      "dominance_shift_vs_prev_run_pp": "N/A (первый запуск или нет истории)",
+      "scenario": "NEUTRAL — нет чёткого сигнала по текущим порогам"
+    },
+    "Solana": {
+      "stablecoin_mcap": {
+        "old_usd": 16291981955.0,
+        "new_usd": 16180142139.7,
+        "pct_change": -0.69
+      },
+      "tvl": {
+        "old_usd": 4736130794,
+        "new_usd": 4779477043,
+        "pct_change": 0.92
+      },
+      "dominance": {
+        "shares_pct": {
+          "USDT": 18.3,
+          "USDC": 44.32
+        },
+        "grand_total_usd": 16171076976.12
+      },
+      "dominance_shift_vs_prev_run_pp": "N/A (первый запуск или нет истории)",
+      "scenario": "NEUTRAL — нет чёткого сигнала по текущим порогам"
+    }
+  },
+  "not_automated": {
+    "layer_1_smart_money_per_wallet": "Arkham/Nansen/DeBank — платный доступ или без API, ручной чек-лист",
+    "cex_tron_reserves": "DeFiLlama /cex/* без документированного JSON API в этой версии"
+  }
+}
