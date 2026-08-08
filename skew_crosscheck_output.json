@@ -1,0 +1,32 @@
+{
+  "timestamp_utc": "2026-08-08T18:36:49.981129+00:00",
+  "skew_latest": "ДАННЫЕ НЕ ПОЛУЧЕНЫ",
+  "skew_trailing_mean_14d": "ДАННЫЕ НЕ ПОЛУЧЕНЫ",
+  "skew_zscore": "ДАННЫЕ НЕ ПОЛУЧЕНЫ",
+  "critical_breach": true,
+  "crosscheck": {
+    "funding_rate_pct_8h": "ДАННЫЕ НЕ ПОЛУЧЕНЫ",
+    "ls_ratio_latest": "ДАННЫЕ НЕ ПОЛУЧЕНЫ",
+    "ls_ratio_stable": "ДАННЫЕ НЕ ПОЛУЧЕНЫ",
+    "basis_pct": "ДАННЫЕ НЕ ПОЛУЧЕНЫ",
+    "signals": [
+      {
+        "metric": "funding",
+        "verdict": "ДАННЫЕ НЕ ПОЛУЧЕНЫ",
+        "detail": "ДАННЫЕ НЕ ПОЛУЧЕНЫ"
+      },
+      {
+        "metric": "ls_ratio",
+        "verdict": "ДАННЫЕ НЕ ПОЛУЧЕНЫ",
+        "detail": "ДАННЫЕ НЕ ПОЛУЧЕНЫ"
+      },
+      {
+        "metric": "basis",
+        "verdict": "ДАННЫЕ НЕ ПОЛУЧЕНЫ",
+        "detail": "ДАННЫЕ НЕ ПОЛУЧЕНЫ"
+      }
+    ],
+    "overall_verdict": "ДАННЫЕ НЕ ПОЛУЧЕНЫ",
+    "not_automated": "CME vs aggregate exchange OI divergence — Coinglass per-exchange breakdown is JS-rendered, requires manual check at coinglass.com/ru/open-interest/BTC"
+  }
+}
