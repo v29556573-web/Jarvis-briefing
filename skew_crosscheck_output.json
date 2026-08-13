@@ -1,8 +1,8 @@
 {
-  "timestamp_utc": "2026-08-11T09:43:59.373857+00:00",
-  "skew_latest": 4.449999999999999,
-  "skew_trailing_mean_14d": 4.983,
-  "skew_zscore": -0.61,
+  "timestamp_utc": "2026-08-13T09:50:01.622752+00:00",
+  "skew_latest": 2.629999999999999,
+  "skew_trailing_mean_14d": 4.961,
+  "skew_zscore": -2.65,
   "critical_breach": true,
   "crosscheck": {
     "funding_rate_pct_8h": "ДАННЫЕ НЕ ПОЛУЧЕНЫ",
