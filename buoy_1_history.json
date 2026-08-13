@@ -2,20 +2,20 @@
   "Base": {
     "dominance": {
       "shares_pct": {
-        "USDC": 86.22
+        "USDC": 86.36
       },
-      "grand_total_usd": 4838462971.14
+      "grand_total_usd": 4934008705.13
     },
-    "last_run_utc": "2026-08-12T09:48:33.330591+00:00"
+    "last_run_utc": "2026-08-13T16:35:36.460715+00:00"
   },
   "Solana": {
     "dominance": {
       "shares_pct": {
-        "USDT": 18.25,
-        "USDC": 42.76
+        "USDT": 18.45,
+        "USDC": 42.15
       },
-      "grand_total_usd": 16206932096.99
+      "grand_total_usd": 16034595013.34
     },
-    "last_run_utc": "2026-08-12T09:48:33.330591+00:00"
+    "last_run_utc": "2026-08-13T16:35:36.460715+00:00"
   }
 }
