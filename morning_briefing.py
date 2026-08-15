@@ -80,9 +80,9 @@ def format_derivatives_section(symbols=None) -> str:
             lines.append(f"*{symbol}*: [ДАННЫЕ НЕ ПРЕДОСТАВЛЕНЫ — {block['error']}]")
             continue
 
-       scenario_raw = block.get("scenario", "N/A")
-           icon = SCENARIO_ICONS.get(scenario_raw, "⚪")
-           lines.append(f"{icon} *{symbol}* — {scenario_raw.replace('_', ' ')}")
+            scenario_raw = block.get("scenario", "N/A")
+                icon = SCENARIO_ICONS.get(scenario_raw, "⚪")
+                lines.append(f"{icon} *{symbol}* — {scenario_raw.replace('_', ' ')}")
 
            if block.get("source") == "hyperliquid_native":
                lines.append(
