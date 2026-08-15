@@ -5,7 +5,7 @@ permissions:
 
 on:
   schedule:
-    - cron: "17 6 * * *"   # раз в сутки, ~09:17 МСК — вместе с утренним брифингом
+    - cron: "23 6 * * *"   # раз в сутки, ~09:23 МСК — сдвинуто от утреннего брифинга во избежании git race
   workflow_dispatch: {}
 
 jobs:
@@ -33,4 +33,5 @@ jobs:
           git config user.email "actions@github.com"
           git add skew_history.json skew_crosscheck_output.json
           git diff --staged --quiet || git commit -m "Daily skew history point"
+          git pull --rebase origin main
           git push
