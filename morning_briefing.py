@@ -80,27 +80,27 @@ def format_derivatives_section(symbols=None) -> str:
             lines.append(f"*{symbol}*: [ДАННЫЕ НЕ ПРЕДОСТАВЛЕНЫ — {block['error']}]")
             continue
 
-            scenario_raw = block.get("scenario", "N/A")
-            icon = SCENARIO_ICONS.get(scenario_raw, "⚪")
-            lines.append(f"{icon} *{symbol}* — {scenario_raw.replace('_', ' ')}")
+        scenario_raw = block.get("scenario", "N/A")
+        icon = SCENARIO_ICONS.get(scenario_raw, "⚪")
+        lines.append(f"{icon} *{symbol}* — {scenario_raw.replace('_', ' ')}")
 
-           if block.get("source") == "hyperliquid_native":
-               lines.append(
-                   f"  OI: {block['openInterest_tokens']:,.0f} токенов | "
-                   f"Funding: {block['funding_pct_8h']:+.4f}%/8ч"
-               )
-           else:
-               oi_change = block.get("oi_change_daily_close_pct")
-               oi_bar_date = block.get("oi_bar_date")
-               oi_z = block.get("oi_zscore_30d")
-               funding = block.get("funding_now_pct_8h")
-               spr = block.get("spot_perp_volume_ratio")
-               lines.append(
-                   f"  OI Δ24ч (закр. бар{' ' + oi_bar_date if oi_bar_date else ''}): "
-                   f"{oi_change if oi_change is not None else 'н/д'}% "
-                   f"(Z: {oi_z if oi_z is not None else 'н/д'}) | "
-                   f"Funding: {funding if funding is not None else 'н/д'}%/8ч"
-               )
+        if block.get("source") == "hyperliquid_native":
+            lines.append(
+                f"  OI: {block['openInterest_tokens']:,.0f} токенов | "
+                f"Funding: {block['funding_pct_8h']:+.4f}%/8ч"
+            )
+        else:
+            oi_change = block.get("oi_change_daily_close_pct")
+            oi_bar_date = block.get("oi_bar_date")
+            oi_z = block.get("oi_zscore_30d")
+            funding = block.get("funding_now_pct_8h")
+            spr = block.get("spot_perp_volume_ratio")
+            lines.append(
+                f"  OI Δ24ч (закр. бар{' ' + oi_bar_date if oi_bar_date else ''}): "
+                f"{oi_change if oi_change is not None else 'н/д'}% "
+                f"(Z: {oi_z if oi_z is not None else 'н/д'}) | "
+                f"Funding: {funding if funding is not None else 'н/д'}%/8ч"
+            )
             if spr is not None:
                 warn = " ⚠️ деривативы доминируют" if block.get("spot_perp_dominated_warning") else ""
                 lines.append(f"  Spot/Perp vol ratio: {spr}{warn}")
