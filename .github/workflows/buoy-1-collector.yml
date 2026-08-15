@@ -21,4 +21,5 @@ jobs:
           git config user.email "actions@github.com"
           git add buoy_1_output.json buoy_1_history.json
           git diff --staged --quiet || git commit -m "Update Buoy 1 stablecoin radar"
+          git pull --rebase origin main
           git push
