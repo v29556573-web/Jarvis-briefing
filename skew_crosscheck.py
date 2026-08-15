@@ -81,23 +81,36 @@ def load_skew_history():
 
 
 def compute_skew_zscore(history, lookback_days=14):
-    """Z-score последней точки против trailing mean/std."""
+    """Z-score последней точки против trailing mean/std.
+
+    Канон [РЕШЕНИЕ VIKTOR 15.08.2026]: baseline = trailing 14 точек,
+    EXCLUDING текущую, population std.
+    """
     if not history or len(history) < lookback_days + 1:
-        return None, None, None
+        return None
 
-    values = [pt["skew"] for pt in history[-(lookback_days + 1):]]
-    baseline = values[:-1]
-    latest = values[-1]
+    window = history[-(lookback_days + 1):]
+    baseline_points = window[:-1]
+    latest_point = window[-1]
+    baseline_values = [pt["skew"] for pt in baseline_points]
+    latest = latest_point["skew"]
 
-    mean = sum(baseline) / len(baseline)
-    variance = sum((v - mean) ** 2 for v in baseline) / len(baseline)
+    mean = sum(baseline_values) / len(baseline_values)
+    variance = sum((v - mean) ** 2 for v in baseline_values) / len(baseline_values)
     std = variance ** 0.5
+    z = (latest - mean) / std if std != 0 else None
 
-    if std == 0:
-        return latest, mean, None
-
-    z = (latest - mean) / std
-    return latest, mean, z
+    return {
+        "latest": latest,
+        "latest_date": latest_point.get("date"),
+        "mean": mean,
+        "std": std,
+        "zscore": z,
+        "baseline_window": lookback_days,
+        "baseline_start": baseline_points[0].get("date"),
+        "baseline_end": baseline_points[-1].get("date"),
+        "includes_current": False,
+    }
 
 
 def get_funding_rate():
@@ -193,9 +206,8 @@ def run(force_check=False):
     timestamp = datetime.now(timezone.utc).isoformat()
     history = load_skew_history()
 
-    latest, mean, z = (None, None, None)
-    if history:
-        latest, mean, z = compute_skew_zscore(history)
+    zdata = compute_skew_zscore(history) if history else None
+    z = zdata["zscore"] if zdata else None
 
     breach = force_check
     if z is not None and abs(z) >= SKEW_CRITICAL_SIGMA:
@@ -203,12 +215,20 @@ def run(force_check=False):
 
     result = {
         "timestamp_utc": timestamp,
-        "skew_latest": latest if latest is not None else NO_DATA,
-        "skew_trailing_mean_14d": round(mean, 3) if mean is not None else NO_DATA,
+        "skew_latest": zdata["latest"] if zdata else NO_DATA,
+        "skew_trailing_mean_14d": round(zdata["mean"], 3) if zdata else NO_DATA,
+        "skew_trailing_std_14d": round(zdata["std"], 4) if zdata else NO_DATA,
         "skew_zscore": round(z, 2) if z is not None else NO_DATA,
         "critical_breach": breach,
+        "baseline": {
+            "window": zdata["baseline_window"],
+            "start": zdata["baseline_start"],
+            "end": zdata["baseline_end"],
+            "includes_current": zdata["includes_current"],
+            "latest_date": zdata["latest_date"],
+        } if zdata else NO_DATA,
     }
-
+  
     if not breach:
         result["note"] = "Skew в пределах нормы, кросс-чек не запускался. Используй force_check=True для ручного прогона."
         print(json.dumps(result, indent=2, ensure_ascii=False))
