@@ -96,8 +96,9 @@ def get_oi_current(inst_id: str) -> float | None:
     return float(rows[0]["oi"])
 
 
-def get_oi_history(ccy: str, days: int = 30) -> list[float]:
-    """Исторический ряд OI (дневные точки, в USD) через rubik-эндпоинт, для Z-score."""
+def get_oi_history(ccy: str, days: int = 30) -> list[dict]:
+    """Исторический ряд OI (дневные точки, в USD) через rubik-эндпоинт, для Z-score.
+    Каждая точка — закрытый календарный день UTC (period='1D'), не скользящее окно."""
     resp = safe_get(
         f"{OKX_BASE}/api/v5/rubik/stat/contracts/open-interest-volume",
         {"ccy": ccy, "period": "1D"},
@@ -107,7 +108,11 @@ def get_oi_history(ccy: str, days: int = 30) -> list[float]:
         return []
     # формат строки: [ts, oi(usd), vol(usd)], от новых к старым
     rows = rows[:days]
-    return [float(r[1]) for r in reversed(rows)]
+    return [
+        {"date": datetime.fromtimestamp(int(r[0]) / 1000, tz=timezone.utc).strftime("%Y-%m-%d"),
+         "oi": float(r[1])}
+        for r in reversed(rows)
+    ]
 
 
 def get_funding_now(inst_id: str) -> float | None:
@@ -295,8 +300,10 @@ def build_asset_block(symbol: str) -> dict:
     # -99% "изменения"). Поэтому % и Z-score считаем ТОЛЬКО внутри
     # самосогласованной rubik-серии, а oi_now показываем отдельно как
     # сырое значение в контрактах (не участвует в расчёте изменения).
-    oi_now = get_oi_current(swap_id)  # контракты — для справки, в change/Z не участвует
-    oi_hist = get_oi_history(ccy, days=30)  # USD-номинал, самосогласованная серия
+    oi_now = get_oi_current(swap_id)
+    oi_hist_raw = get_oi_history(ccy, days=30)
+    oi_bar_date = oi_hist_raw[-1]["date"] if oi_hist_raw else None
+    oi_hist = [pt["oi"] for pt in oi_hist_raw]
     oi_hist_current = oi_hist[-1] if oi_hist else None
     oi_hist_ref = oi_hist[-2] if len(oi_hist) >= 2 else None
     oi_change = None
@@ -327,7 +334,8 @@ def build_asset_block(symbol: str) -> dict:
         "tier": tier,
         "source": "okx",
         "oi_current": oi_now,
-        "oi_change_24h_pct": round(oi_change, 2) if oi_change is not None else None,
+        "oi_change_daily_close_pct": round(oi_change, 2) if oi_change is not None else None,
+        "oi_bar_date": oi_bar_date,
         "oi_zscore_30d": round(oi_z, 2) if oi_z is not None else None,
         "oi_coinm_current": oi_coinm,
         "funding_now_pct_8h": round(funding_now, 4) if funding_now is not None else None,
