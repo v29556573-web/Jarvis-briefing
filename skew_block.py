@@ -17,7 +17,25 @@ value_type="eod_close" + source_timestamp реального момента за
 Каждый внутридневной прогон дополнительно пишет сырой снимок в
 skew_intraday.json (value_type="intraday", хранится 7 дней) — это чистый
 аудит-лог фактических запусков, НЕ используется в расчёте Z-score/baseline.
-Baseline в skew_crosscheck.py по-прежнему строится по skew_history.json.
+
+[РЕШЕНИЕ VIKTOR 16.08.2026, пункт 4 критерий разворота]: старый z-score
+считался по ВСЕЙ истории (mean/std от полного массива), из-за чего
+монотонный дрейф со временем сам себя подсвечивал как аномалию — точка
+не разворачивалась, а просто продолжала тренд, но всё равно уходила
+за ±1.5σ/±2.0σ от статичного среднего. Заменено на ДЕТРЕНДИНГ: по
+последним 14 точкам (тот же канон окна, что в skew_crosscheck.py —
+[РЕШЕНИЕ VIKTOR 15.08.2026], exclude current, единая методология по всем
+компонентам) строится линейный тренд (МНК), текущая точка сравнивается
+не со средним, а с ПРОГНОЗОМ тренда на следующий шаг. Z-score теперь —
+это отклонение от продолжения тренда, а не от статичного уровня:
+монотонный дрейф больше не накапливает z сам на себя, критический флаг
+означает уход ОТ линии тренда, а не просто высокое абсолютное значение.
+Старый full-history z-score НЕ удалён — сохранён в выводе как
+zscore_legacy_full_history / classification_legacy для сравнения и
+истории решения (принцип: плавающие/устаревшие параметры помечаются
+[ПРЕДЫДУЩЕЕ], а не удаляются молча). Управляющее поле для Daily Check
+и прочих потребителей — "classification" (теперь на детренд-критерии),
+не "classification_legacy".
 
 Пороги (из памяти JARVIS "Mark50 Section 10"):
   Z-score ±1.5σ = сигнал, ±2.0σ = критично (институциональный tail-hedge)
@@ -39,6 +57,7 @@ HISTORY_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "skew_hi
 INTRADAY_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "skew_intraday.json")
 HISTORY_MAX_DAYS = 90
 INTRADAY_MAX_DAYS = 7
+BASELINE_WINDOW = 14  # канон [РЕШЕНИЕ VIKTOR 15.08.2026], единый для skew_crosscheck.py и skew_block.py
 TARGET_DELTA = 0.25
 TARGET_TENOR_DAYS = 30  # ищем экспирацию ближе всего к 30 дням вперёд
 TIMEOUT = 10
@@ -234,7 +253,61 @@ def append_intraday_snapshot(snapshots, skew_value, timestamp_iso):
     return snapshots
 
 
-def rolling_zscore(history_values, current):
+def linear_regression(xs, ys):
+    """МНК без numpy: возвращает (slope, intercept) для y = slope*x + intercept."""
+    n = len(xs)
+    mean_x = sum(xs) / n
+    mean_y = sum(ys) / n
+    num = sum((x - mean_x) * (y - mean_y) for x, y in zip(xs, ys))
+    den = sum((x - mean_x) ** 2 for x in xs)
+    slope = num / den if den != 0 else 0.0
+    intercept = mean_y - slope * mean_x
+    return slope, intercept
+
+
+def compute_detrended_zscore(prior_history, current_skew, lookback_days=BASELINE_WINDOW):
+    """Z-score текущей точки относительно ПРОГНОЗА линейного тренда по
+    последним lookback_days точкам (а не относительно статичного среднего).
+
+    [РЕШЕНИЕ VIKTOR 16.08.2026, пункт 4]: монотонный дрейф не должен сам
+    себя подсвечивать как аномалию — критично, только если точка уходит
+    ОТ линии тренда, а не просто продолжает его на новом уровне.
+    """
+    if len(prior_history) < lookback_days:
+        return None
+
+    baseline = prior_history[-lookback_days:]
+    xs = list(range(lookback_days))  # 0..13, порядок по возрастанию даты
+    ys = [pt["skew"] for pt in baseline]
+
+    slope, intercept = linear_regression(xs, ys)
+    residuals = [y - (slope * x + intercept) for x, y in zip(xs, ys)]
+    residual_std = pstdev(residuals)
+
+    predicted_current = slope * lookback_days + intercept  # экстраполяция на следующий шаг (индекс 14)
+    residual_current = current_skew - predicted_current
+    z = residual_current / residual_std if residual_std != 0 else None
+
+    return {
+        "zscore": round(z, 2) if z is not None else None,
+        "trend_slope": round(slope, 4),
+        "trend_intercept": round(intercept, 4),
+        "predicted_value": round(predicted_current, 3),
+        "residual": round(residual_current, 3),
+        "residual_std": round(residual_std, 4),
+        "baseline_window": lookback_days,
+        "baseline_start": baseline[0].get("date"),
+        "baseline_end": baseline[-1].get("date"),
+        "includes_current": False,
+        "method": "linear_detrend",
+    }
+
+
+def rolling_zscore_legacy(history_values, current):
+    """[ПРЕДЫДУЩЕЕ, 16.08.2026] Z-score по ВСЕЙ истории от статичного
+    среднего. Заменён детрендингом (compute_detrended_zscore) как основной
+    критерий классификации — монотонный дрейф накапливал z сам на себя.
+    Оставлен для сравнения/истории решения, не управляет classification."""
     if len(history_values) < 5:
         return None
     mu = mean(history_values)
@@ -272,7 +345,11 @@ def main():
 
     history = load_history()
     prior_values = [h["skew"] for h in history]  # история ДО сегодняшней точки
-    z = rolling_zscore(prior_values, skew)
+
+    detrended = compute_detrended_zscore(history, skew)
+    z = detrended["zscore"] if detrended else None
+
+    z_legacy = rolling_zscore_legacy(prior_values, skew)
 
     now_iso = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
@@ -285,8 +362,11 @@ def main():
 
     result.update({
         "skew_pct": round(skew, 3),
-        "zscore": round(z, 2) if z is not None else None,
+        "zscore": z,
         "classification": classify_skew(z),
+        "trend": detrended if detrended else "INSUFFICIENT_HISTORY",
+        "zscore_legacy_full_history": round(z_legacy, 2) if z_legacy is not None else None,
+        "classification_legacy": classify_skew(z_legacy),
         "history_points": len(prior_values),
         "meta": meta,
     })
