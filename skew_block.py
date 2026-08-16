@@ -55,6 +55,7 @@ import requests
 DERIBIT_BASE = "https://www.deribit.com/api/v2"
 HISTORY_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "skew_history.json")
 INTRADAY_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "skew_intraday.json")
+BLOCK_OUTPUT_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "skew_block_output.json")
 HISTORY_MAX_DAYS = 90
 INTRADAY_MAX_DAYS = 7
 BASELINE_WINDOW = 14  # канон [РЕШЕНИЕ VIKTOR 15.08.2026], единый для skew_crosscheck.py и skew_block.py
@@ -370,6 +371,16 @@ def main():
         "history_points": len(prior_values),
         "meta": meta,
     })
+
+    # [РЕШЕНИЕ VIKTOR 16.08.2026]: результат коммитится в файл — Cloud-рутины
+    # (JARVIS Pre-Market Check / Daily Check) должны читать classification/
+    # zscore/trend ОТСЮДА, а не пересчитывать z-score самостоятельно по
+    # skew_history.json своей текстовой инструкцией. Без этого файла патчи
+    # методологии в этом скрипте не долетают до рутин — расхождение,
+    # выявленное 16.08.2026.
+    with open(BLOCK_OUTPUT_FILE, "w") as f:
+        json.dump(result, f, indent=2, ensure_ascii=False)
+
     print(json.dumps(result, indent=2, ensure_ascii=False))
 
 
