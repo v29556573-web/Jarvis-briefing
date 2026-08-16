@@ -11,6 +11,14 @@ JARVIS — BTC Options Skew (25-delta), источник: Deribit public API
 предыдущие для Z-score. Требуется git commit-back в workflow (см. правку
 .yml ниже) — иначе история будет теряться между запусками.
 
+[РЕШЕНИЕ VIKTOR 16.08.2026, пункт 2 snapshot/intraday]: skew_history.json
+хранит ОДНУ точку в сутки (last-write-wins на дату, помечена
+value_type="eod_close" + source_timestamp реального момента записи).
+Каждый внутридневной прогон дополнительно пишет сырой снимок в
+skew_intraday.json (value_type="intraday", хранится 7 дней) — это чистый
+аудит-лог фактических запусков, НЕ используется в расчёте Z-score/baseline.
+Baseline в skew_crosscheck.py по-прежнему строится по skew_history.json.
+
 Пороги (из памяти JARVIS "Mark50 Section 10"):
   Z-score ±1.5σ = сигнал, ±2.0σ = критично (институциональный tail-hedge)
 
@@ -21,7 +29,7 @@ import json
 import os
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from statistics import mean, pstdev
 
 import requests
@@ -210,7 +218,6 @@ def load_intraday():
 
 
 def save_intraday(snapshots):
-    from datetime import timedelta
     cutoff_date = (datetime.now(timezone.utc) - timedelta(days=INTRADAY_MAX_DAYS)).strftime("%Y-%m-%d")
     snapshots = [s for s in snapshots if s["date"] >= cutoff_date]
     with open(INTRADAY_FILE, "w") as f:
@@ -232,8 +239,8 @@ def rolling_zscore(history_values, current):
         return None
     mu = mean(history_values)
     sigma = pstdev(history_values)
-    history = append_today(history, skew)
-        save_history(history)
+    if sigma == 0:
+        return None
     return (current - mu) / sigma
 
 
@@ -267,8 +274,14 @@ def main():
     prior_values = [h["skew"] for h in history]  # история ДО сегодняшней точки
     z = rolling_zscore(prior_values, skew)
 
-    history = append_today(history, skew)
+    now_iso = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    history = append_today(history, skew, now_iso)
     save_history(history)
+
+    intraday = load_intraday()
+    intraday = append_intraday_snapshot(intraday, skew, now_iso)
+    save_intraday(intraday)
 
     result.update({
         "skew_pct": round(skew, 3),
