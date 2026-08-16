@@ -28,6 +28,6 @@ jobs:
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-          git add skew_history.json
+          git add skew_history.json skew_intraday.json
           git diff --staged --quiet || git commit -m "Update skew history (test)"
           git push
