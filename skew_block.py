@@ -28,7 +28,9 @@ import requests
 
 DERIBIT_BASE = "https://www.deribit.com/api/v2"
 HISTORY_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "skew_history.json")
+INTRADAY_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "skew_intraday.json")
 HISTORY_MAX_DAYS = 90
+INTRADAY_MAX_DAYS = 7
 TARGET_DELTA = 0.25
 TARGET_TENOR_DAYS = 30  # ищем экспирацию ближе всего к 30 дням вперёд
 TIMEOUT = 10
@@ -185,11 +187,44 @@ def save_history(history):
         json.dump(history[-HISTORY_MAX_DAYS:], f, indent=2)
 
 
-def append_today(history, skew_value):
-    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+def append_today(history, skew_value, timestamp_iso):
+    today = timestamp_iso[:10]
     history = [h for h in history if h["date"] != today]  # не дублировать при повторном запуске в тот же день
-    history.append({"date": today, "skew": skew_value})
+    history.append({
+        "date": today,
+        "skew": skew_value,
+        "value_type": "eod_close",
+        "source_timestamp": timestamp_iso,
+    })
     return history
+
+
+def load_intraday():
+    if not os.path.exists(INTRADAY_FILE):
+        return []
+    try:
+        with open(INTRADAY_FILE, "r") as f:
+            return json.load(f)
+    except Exception:
+        return []
+
+
+def save_intraday(snapshots):
+    from datetime import timedelta
+    cutoff_date = (datetime.now(timezone.utc) - timedelta(days=INTRADAY_MAX_DAYS)).strftime("%Y-%m-%d")
+    snapshots = [s for s in snapshots if s["date"] >= cutoff_date]
+    with open(INTRADAY_FILE, "w") as f:
+        json.dump(snapshots, f, indent=2)
+
+
+def append_intraday_snapshot(snapshots, skew_value, timestamp_iso):
+    snapshots.append({
+        "date": timestamp_iso[:10],
+        "timestamp_utc": timestamp_iso,
+        "skew": skew_value,
+        "value_type": "intraday",
+    })
+    return snapshots
 
 
 def rolling_zscore(history_values, current):
@@ -197,8 +232,8 @@ def rolling_zscore(history_values, current):
         return None
     mu = mean(history_values)
     sigma = pstdev(history_values)
-    if sigma == 0:
-        return None
+    history = append_today(history, skew)
+        save_history(history)
     return (current - mu) / sigma
 
 
