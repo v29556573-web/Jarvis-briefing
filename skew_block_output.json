@@ -1,0 +1,33 @@
+{
+  "asset": "BTC",
+  "generated_at_utc": "2026-08-16T17:00:29Z",
+  "skew_pct": 5.37,
+  "zscore": 2.69,
+  "classification": "CRITICAL_PUT_PREMIUM",
+  "trend": {
+    "zscore": 2.69,
+    "trend_slope": -0.1655,
+    "trend_intercept": 5.5291,
+    "predicted_value": 3.213,
+    "residual": 2.157,
+    "residual_std": 0.8017,
+    "baseline_window": 14,
+    "baseline_start": "2026-08-01",
+    "baseline_end": "2026-08-16",
+    "includes_current": false,
+    "method": "linear_detrend"
+  },
+  "zscore_legacy_full_history": 0.66,
+  "classification_legacy": "NORMAL",
+  "history_points": 20,
+  "meta": {
+    "expiry_ts": 1790323200000,
+    "call_instrument": "BTC-25SEP26-68000-C",
+    "call_iv": 32.68,
+    "call_delta": 0.27939,
+    "put_instrument": "BTC-25SEP26-58000-P",
+    "put_iv": 38.05,
+    "put_delta": -0.2168,
+    "underlying_price": 63199.73
+  }
+}

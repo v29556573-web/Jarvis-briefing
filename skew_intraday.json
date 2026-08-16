@@ -10,5 +10,11 @@
     "timestamp_utc": "2026-08-16T14:33:13Z",
     "skew": 5.270000000000003,
     "value_type": "intraday"
+  },
+  {
+    "date": "2026-08-16",
+    "timestamp_utc": "2026-08-16T17:00:29Z",
+    "skew": 5.369999999999997,
+    "value_type": "intraday"
   }
 ]
