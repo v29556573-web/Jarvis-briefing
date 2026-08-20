@@ -1,9 +1,17 @@
 {
-  "timestamp_utc": "2026-08-15T06:59:23.872883+00:00",
-  "skew_latest": 4.140000000000001,
-  "skew_trailing_mean_14d": 4.526,
-  "skew_zscore": -0.36,
+  "timestamp_utc": "2026-08-20T07:12:55.814392+00:00",
+  "skew_latest": 2.289999999999999,
+  "skew_trailing_mean_14d": 4.084,
+  "skew_trailing_std_14d": 0.8154,
+  "skew_zscore": -2.2,
   "critical_breach": true,
+  "baseline": {
+    "window": 14,
+    "start": "2026-08-04",
+    "end": "2026-08-19",
+    "includes_current": false,
+    "latest_date": "2026-08-20"
+  },
   "crosscheck": {
     "funding_rate_pct_8h": "ДАННЫЕ НЕ ПОЛУЧЕНЫ",
     "ls_ratio_latest": "ДАННЫЕ НЕ ПОЛУЧЕНЫ",
