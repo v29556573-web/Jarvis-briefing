@@ -1,50 +1,50 @@
 {
-  "timestamp_utc": "2026-08-20T07:04:02.990740+00:00",
+  "timestamp_utc": "2026-08-21T07:05:39.604439+00:00",
   "lookback_days": 7,
   "chains": {
     "Base": {
       "stablecoin_mcap": {
-        "old_usd": 4904712814.0,
-        "new_usd": 4932865177.07,
-        "pct_change": 0.57
+        "old_usd": 4922127579.0,
+        "new_usd": 4943168435.31,
+        "pct_change": 0.43
       },
       "tvl": {
-        "old_usd": 4644729450,
-        "new_usd": 5016254966,
-        "pct_change": 8.0
+        "old_usd": 4625849106,
+        "new_usd": 5306499130,
+        "pct_change": 14.71
       },
       "dominance": {
         "shares_pct": {
-          "USDC": 86.0
+          "USDC": 86.47
         },
-        "grand_total_usd": 4929238178.59
+        "grand_total_usd": 4943553548.45
       },
       "dominance_shift_vs_prev_run_pp": {
-        "USDC": -0.03
+        "USDC": 0.47
       },
       "scenario": "NEUTRAL — нет чёткого сигнала по текущим порогам"
     },
     "Solana": {
       "stablecoin_mcap": {
-        "old_usd": 16015754261.0,
-        "new_usd": 16260954937.8,
-        "pct_change": 1.53
+        "old_usd": 16032479437.0,
+        "new_usd": 16452155313.5,
+        "pct_change": 2.62
       },
       "tvl": {
-        "old_usd": 4823175760,
-        "new_usd": 5199123880,
-        "pct_change": 7.79
+        "old_usd": 4837139574,
+        "new_usd": 5380324822,
+        "pct_change": 11.23
       },
       "dominance": {
         "shares_pct": {
-          "USDT": 17.49,
-          "USDC": 43.85
+          "USDT": 17.44,
+          "USDC": 44.14
         },
-        "grand_total_usd": 16344470788.26
+        "grand_total_usd": 16397229363.44
       },
       "dominance_shift_vs_prev_run_pp": {
-        "USDT": -0.37,
-        "USDC": 1.19
+        "USDT": -0.05,
+        "USDC": 0.29
       },
       "scenario": "NEUTRAL — нет чёткого сигнала по текущим порогам"
     }
