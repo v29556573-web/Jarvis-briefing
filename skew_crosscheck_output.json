@@ -1,16 +1,16 @@
 {
-  "timestamp_utc": "2026-08-21T07:13:46.911045+00:00",
-  "skew_latest": 1.3299999999999983,
-  "skew_trailing_mean_14d": 3.849,
-  "skew_trailing_std_14d": 0.8243,
-  "skew_zscore": -3.06,
+  "timestamp_utc": "2026-08-22T07:05:58.896807+00:00",
+  "skew_latest": -1.9099999999999966,
+  "skew_trailing_mean_14d": 3.599,
+  "skew_trailing_std_14d": 1.0006,
+  "skew_zscore": -5.51,
   "critical_breach": true,
   "baseline": {
     "window": 14,
-    "start": "2026-08-05",
-    "end": "2026-08-20",
+    "start": "2026-08-06",
+    "end": "2026-08-21",
     "includes_current": false,
-    "latest_date": "2026-08-21"
+    "latest_date": "2026-08-22"
   },
   "crosscheck": {
     "funding_rate_pct_8h": "ДАННЫЕ НЕ ПОЛУЧЕНЫ",
