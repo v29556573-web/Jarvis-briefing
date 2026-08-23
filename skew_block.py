@@ -318,6 +318,52 @@ def rolling_zscore_legacy(history_values, current):
     return (current - mu) / sigma
 
 
+def compute_classical_zscore(prior_history, current_skew, lookback_days=BASELINE_WINDOW):
+    """Классический z: (текущее - mean(baseline)) / pop_std(baseline) по тем же
+    14 точкам, что и детренд (exclude current). Канон §10.3, вторая нога
+    двойного чтения [РЕШЕНИЕ VIKTOR 23.08.2026]. Тождественен методу
+    skew_crosscheck.compute_skew_zscore, чтобы источники не расходились.
+
+    Слепая зона классического: медленный монотонный дрейф (уровень уходит
+    маленькими шагами, каждый \"нормальный\") — его ловит детренд. Слепая зона
+    детренда: скачок уровня + залипание, где детренд инвертирует знак — его
+    страхует классический. Методы взаимодополняющие, поэтому читаются оба.
+    """
+    if len(prior_history) < lookback_days:
+        return None
+    baseline = [pt["skew"] for pt in prior_history[-lookback_days:]]
+    mu = mean(baseline)
+    sigma = pstdev(baseline)
+    if sigma == 0:
+        return None
+    return (current_skew - mu) / sigma
+
+
+def combined_classification(z_detr, z_class):
+    """Двойное чтение [РЕШЕНИЕ VIKTOR 23.08.2026]. НЕ усредняет — маркирует.
+    - CRITICAL только при СОГЛАСИИ: оба |z|>=2.0 И совпадает знак.
+    - NORMAL: оба в норме (|z|<1.5 или отсутствуют).
+    - Иначе DIVERGENT: автоматического вердикта нет, эскалация Viktor.
+    Соответствует правилу Judge при directional conflict: не сглаживать.
+    """
+    da = abs(z_detr) if z_detr is not None else 0.0
+    ca = abs(z_class) if z_class is not None else 0.0
+    both_present = z_detr is not None and z_class is not None
+    same_sign = both_present and (z_detr > 0) == (z_class > 0)
+
+    if both_present and da >= 2.0 and ca >= 2.0 and same_sign:
+        side = "PUT_PREMIUM" if z_detr > 0 else "CALL_PREMIUM"
+        return {"verdict": f"CRITICAL_{side}", "agreement": "AGREE", "escalate": False}
+    if da < 1.5 and ca < 1.5:
+        return {"verdict": "NORMAL", "agreement": "AGREE", "escalate": False}
+    return {
+        "verdict": "DIVERGENT",
+        "agreement": "DISAGREE",
+        "escalate": True,
+        "note": "Методы расходятся — автоматического вердикта нет, требуется ручное решение Viktor (§10.3 двойное чтение).",
+    }
+
+
 def classify_skew(z):
     if z is None:
         return "INSUFFICIENT_HISTORY"
@@ -351,6 +397,7 @@ def main():
     z = detrended["zscore"] if detrended else None
 
     z_legacy = rolling_zscore_legacy(prior_values, skew)
+    z_classical = compute_classical_zscore(history, skew)
 
     now_iso = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
@@ -368,6 +415,9 @@ def main():
         "trend": detrended if detrended else "INSUFFICIENT_HISTORY",
         "zscore_legacy_full_history": round(z_legacy, 2) if z_legacy is not None else None,
         "classification_legacy": classify_skew(z_legacy),
+        "zscore_classical": round(z_classical, 2) if z_classical is not None else None,
+        "classification_classical": classify_skew(z_classical),
+        "classification_combined": combined_classification(z, z_classical),
         "history_points": len(prior_values),
         "meta": meta,
     })
