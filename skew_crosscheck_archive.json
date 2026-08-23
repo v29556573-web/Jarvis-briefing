@@ -1,6 +1,28 @@
 {
-  "note": "Архив реальных критических пробоев skew_crosscheck.py. Кодом НЕ подтягивается — только история решений, по образцу cme_okx_spread_history.json. Создан 23.08.2026 [РЕШЕНИЕ VIKTOR].",
+  "note": "Архив реальных критических пробоев skew_crosscheck.py. Кодом НЕ подтягивается, только история решений — по образцу cme_okx_spread_history.json. Создан 23.08.2026 [РЕШЕНИЕ VIKTOR].",
   "records": [
-    <СЮДА ВСТАВИТЬ ИЗ БУФЕРА ВЕСЬ ОБЪЕКТ 22.08 — от { строки 1 до } строки 40>
+    {
+      "timestamp_utc": "2026-08-22T07:05:58.896807+00:00",
+      "skew_latest": -1.9099999999999966,
+      "skew_trailing_mean_14d": 3.599,
+      "skew_trailing_std_14d": 1.0006,
+      "skew_zscore": -5.51,
+      "critical_breach": true,
+      "baseline": {
+        "window": 14,
+        "start": "2026-08-06",
+        "end": "2026-08-21",
+        "includes_current": false,
+        "latest_date": "2026-08-22"
+      },
+      "crosscheck": {
+        "funding_rate_pct_8h": "ДАННЫЕ НЕ ПОЛУЧЕНЫ",
+        "ls_ratio_latest": "ДАННЫЕ НЕ ПОЛУЧЕНЫ",
+        "ls_ratio_stable": "ДАННЫЕ НЕ ПОЛУЧЕНЫ",
+        "basis_pct": "ДАННЫЕ НЕ ПОЛУЧЕНЫ",
+        "overall_verdict": "ДАННЫЕ НЕ ПОЛУЧЕНЫ",
+        "hard_rule_note": "Bybit 403 (GH Actions / Azure). Все три подтверждающие ноги исключены по HARD RULE. Пробой -5.51σ НЕ подтверждён и НЕ опровергнут вторым фактором."
+      }
+    }
   ]
 }
