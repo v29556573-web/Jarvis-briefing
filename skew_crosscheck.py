@@ -229,9 +229,12 @@ def run(force_check=False):
         } if zdata else NO_DATA,
     }
   
-    if not breach:
+        if not breach:
         result["note"] = "Skew в пределах нормы, кросс-чек не запускался. Используй force_check=True для ручного прогона."
+        with open(OUTPUT_PATH, "w") as f:
+            json.dump(result, f, indent=2, ensure_ascii=False)
         print(json.dumps(result, indent=2, ensure_ascii=False))
+        print(f"\nЗаписано в {OUTPUT_PATH}")
         return result
 
     funding = get_funding_rate()
