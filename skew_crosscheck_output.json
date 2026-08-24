@@ -1,11 +1,16 @@
 {
-  "timestamp_utc": "2026-08-23T00:00:00+00:00",
-  "status": "MANUAL_RESET",
-  "note": "Обнулён вручную 23.08.2026 [РЕШЕНИЕ VIKTOR]. Запись пробоя 22.08 вынесена в skew_crosscheck_archive.json. Поля ниже СБРОШЕНЫ, а не рассчитаны — не использовать как данные. Авторитетный источник скью — skew_block_output.json (§10.3).",
-  "skew_latest": null,
-  "skew_trailing_mean_14d": null,
-  "skew_trailing_std_14d": null,
-  "skew_zscore": null,
+  "timestamp_utc": "2026-08-24T07:33:27.699739+00:00",
+  "skew_latest": -0.9299999999999997,
+  "skew_trailing_mean_14d": 2.828,
+  "skew_trailing_std_14d": 1.8987,
+  "skew_zscore": -1.98,
   "critical_breach": false,
-  "baseline": null
+  "baseline": {
+    "window": 14,
+    "start": "2026-08-08",
+    "end": "2026-08-23",
+    "includes_current": false,
+    "latest_date": "2026-08-24"
+  },
+  "note": "Skew в пределах нормы, кросс-чек не запускался. Используй force_check=True для ручного прогона."
 }
