@@ -1,16 +1,40 @@
 {
-  "timestamp_utc": "2026-08-24T07:33:27.699739+00:00",
-  "skew_latest": -0.9299999999999997,
-  "skew_trailing_mean_14d": 2.828,
-  "skew_trailing_std_14d": 1.8987,
-  "skew_zscore": -1.98,
-  "critical_breach": false,
+  "timestamp_utc": "2026-08-25T07:14:57.895518+00:00",
+  "skew_latest": -3.8900000000000006,
+  "skew_trailing_mean_14d": 2.528,
+  "skew_trailing_std_14d": 2.1236,
+  "skew_zscore": -3.02,
+  "critical_breach": true,
   "baseline": {
     "window": 14,
-    "start": "2026-08-08",
-    "end": "2026-08-23",
+    "start": "2026-08-09",
+    "end": "2026-08-24",
     "includes_current": false,
-    "latest_date": "2026-08-24"
+    "latest_date": "2026-08-25"
   },
-  "note": "Skew в пределах нормы, кросс-чек не запускался. Используй force_check=True для ручного прогона."
+  "crosscheck": {
+    "funding_rate_pct_8h": "ДАННЫЕ НЕ ПОЛУЧЕНЫ",
+    "ls_ratio_latest": "ДАННЫЕ НЕ ПОЛУЧЕНЫ",
+    "ls_ratio_stable": "ДАННЫЕ НЕ ПОЛУЧЕНЫ",
+    "basis_pct": "ДАННЫЕ НЕ ПОЛУЧЕНЫ",
+    "signals": [
+      {
+        "metric": "funding",
+        "verdict": "ДАННЫЕ НЕ ПОЛУЧЕНЫ",
+        "detail": "ДАННЫЕ НЕ ПОЛУЧЕНЫ"
+      },
+      {
+        "metric": "ls_ratio",
+        "verdict": "ДАННЫЕ НЕ ПОЛУЧЕНЫ",
+        "detail": "ДАННЫЕ НЕ ПОЛУЧЕНЫ"
+      },
+      {
+        "metric": "basis",
+        "verdict": "ДАННЫЕ НЕ ПОЛУЧЕНЫ",
+        "detail": "ДАННЫЕ НЕ ПОЛУЧЕНЫ"
+      }
+    ],
+    "overall_verdict": "ДАННЫЕ НЕ ПОЛУЧЕНЫ",
+    "not_automated": "CME vs aggregate exchange OI divergence — Coinglass per-exchange breakdown is JS-rendered, requires manual check at coinglass.com/ru/open-interest/BTC"
+  }
 }
