@@ -1,7 +1,13 @@
 name: Test Skew Block
 
+# ВНИМАНИЕ: тестовый workflow. Запись в репозиторий ЗАПРЕЩЕНА намеренно.
+# 23.08.2026 этот workflow закоммитил точку в боевой skew_history.json
+# (19:53 UTC, skew -0.33) — она попала в baseline §10.3.
+# permissions: read-all и отсутствие git push — это предохранитель,
+# не упущение. Не возвращать contents: write.
+
 permissions:
-  contents: write
+  contents: read
 
 on:
   workflow_dispatch: {}
@@ -24,10 +30,19 @@ jobs:
       - name: Run skew block (test)
         run: python skew_block.py
 
-      - name: Commit skew history
+      - name: Verify no production file was modified
         run: |
-          git config user.name "github-actions"
-          git config user.email "actions@github.com"
-          git add skew_history.json skew_intraday.json skew_block_output.json
-          git diff --staged --quiet || git commit -m "Update skew history (test)"
-          git push
+          git diff --quiet -- skew_history.json skew_intraday.json skew_block_output.json \
+            || echo "::warning::skew_block.py изменил боевые файлы локально; в репозиторий они не уйдут (нет прав на запись)"
+
+      - name: Upload test output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: skew-test-output
+          path: |
+            skew_history.json
+            skew_intraday.json
+            skew_block_output.json
+          retention-days: 14
+          if-no-files-found: warn
