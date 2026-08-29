@@ -37,6 +37,20 @@ zscore_legacy_full_history / classification_legacy для сравнения и
 и прочих потребителей — "classification" (теперь на детренд-критерии),
 не "classification_legacy".
 
+[РЕШЕНИЕ VIKTOR 29.08.2026, append-лог вердиктов — закрывает дефект R3′]:
+BLOCK_OUTPUT_FILE (skew_block_output.json) пишется в режиме "w" — каждый
+прогон полностью перезаписывает предыдущий. Это означает, что z_detrended,
+z_classical и classification_combined ЖИВУТ только до следующего запуска;
+разбор задним числом (аудит правила §10.3, накопление кейсов skew→структура)
+опирался фактически на телеграм-скриншоты Pre-Market/Daily Check, а не на
+данные в репозитории. Добавлен VERDICT_HISTORY_FILE (skew_verdict_history.json,
+append-only, НЕ last-write-wins на дату — в отличие от skew_history.json,
+здесь намеренно сохраняется КАЖДЫЙ прогон отдельной записью, включая
+множественные запуски в один день: это и есть строки, которых не хватало
+для аудита разброса времени съёма, найденного 29.08.2026). Не входит в
+расчёт z-score/baseline (тот считается только по skew_history.json,
+как раньше) — чисто аудит-лог эмитированных вердиктов.
+
 Пороги (из памяти JARVIS "Mark50 Section 10"):
   Z-score ±1.5σ = сигнал, ±2.0σ = критично (институциональный tail-hedge)
 
@@ -56,8 +70,10 @@ DERIBIT_BASE = "https://www.deribit.com/api/v2"
 HISTORY_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "skew_history.json")
 INTRADAY_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "skew_intraday.json")
 BLOCK_OUTPUT_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "skew_block_output.json")
+VERDICT_HISTORY_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "skew_verdict_history.json")
 HISTORY_MAX_DAYS = 90
 INTRADAY_MAX_DAYS = 7
+VERDICT_HISTORY_MAX_RECORDS = 500  # append-only; несколько записей в сутки — норма, не дедуплицируем по дате
 BASELINE_WINDOW = 14  # канон [РЕШЕНИЕ VIKTOR 15.08.2026], единый для skew_crosscheck.py и skew_block.py
 TARGET_DELTA = 0.25
 TARGET_TENOR_DAYS = 30  # ищем экспирацию ближе всего к 30 дням вперёд
@@ -254,6 +270,44 @@ def append_intraday_snapshot(snapshots, skew_value, timestamp_iso):
     return snapshots
 
 
+# ---------------------------------------------------------------------------
+# ВЕРДИКТ-ЛОГ [РЕШЕНИЕ VIKTOR 29.08.2026] — append-only аудит classification_combined
+# ---------------------------------------------------------------------------
+
+def load_verdict_history():
+    if not os.path.exists(VERDICT_HISTORY_FILE):
+        return []
+    try:
+        with open(VERDICT_HISTORY_FILE, "r") as f:
+            return json.load(f)
+    except Exception:
+        return []
+
+
+def save_verdict_history(records):
+    # append-only, без дедупликации по дате — несколько прогонов в сутки
+    # намеренно сохраняются как отдельные записи (см. докстринг модуля).
+    # Ограничиваем только по КОЛИЧЕСТВУ записей, не по дате.
+    with open(VERDICT_HISTORY_FILE, "w") as f:
+        json.dump(records[-VERDICT_HISTORY_MAX_RECORDS:], f, indent=2, ensure_ascii=False)
+
+
+def append_verdict(records, *, timestamp_iso, skew_pct, z_detrended, z_classical, combined):
+    records.append({
+        "date": timestamp_iso[:10],
+        "snapshot_utc": timestamp_iso,
+        "skew_pct": skew_pct,
+        "z_detrended": z_detrended,
+        "z_classical": z_classical,
+        "verdict": combined.get("verdict"),
+        "agreement": combined.get("agreement"),
+        "escalate": combined.get("escalate"),
+        "note": combined.get("note"),
+        "rule": "R3prime-2026-08-28",
+    })
+    return records
+
+
 def linear_regression(xs, ys):
     """МНК без numpy: возвращает (slope, intercept) для y = slope*x + intercept."""
     n = len(xs)
@@ -345,6 +399,15 @@ def combined_classification(z_detr, z_class):
     - NORMAL: оба в норме (|z|<1.5 или отсутствуют).
     - Иначе DIVERGENT: автоматического вердикта нет, эскалация Viktor.
     Соответствует правилу Judge при directional conflict: не сглаживать.
+
+    [ДЕФЕКТ, ЗАРЕГИСТРИРОВАН 29.08.2026, НЕ ИСПРАВЛЕН — см. §12 реестр]:
+    при z_detr is None (< BASELINE_WINDOW точек истории) da подставляется
+    как 0.0, а не как "нет данных". Если при этом ca < 1.5, функция вернёт
+    NORMAL, хотя корректный вердикт — INSUFFICIENT_HISTORY. Сейчас
+    неактуально (истории > 14 точек), но станет риском при сбросе
+    контейнера или добавлении нового инструмента (напр. ETH skew) без
+    накопленной истории. Не исправлено в этой правке — исправление не
+    запрошено, только регистрация дефекта.
     """
     da = abs(z_detr) if z_detr is not None else 0.0
     ca = abs(z_class) if z_class is not None else 0.0
@@ -408,6 +471,22 @@ def main():
     intraday = append_intraday_snapshot(intraday, skew, now_iso)
     save_intraday(intraday)
 
+    combined = combined_classification(z, z_classical)
+
+    # [РЕШЕНИЕ VIKTOR 29.08.2026]: append-лог вердикта — ДО перезаписи
+    # BLOCK_OUTPUT_FILE, чтобы classification_combined не терялся между
+    # прогонами (см. докстринг модуля).
+    verdict_history = load_verdict_history()
+    verdict_history = append_verdict(
+        verdict_history,
+        timestamp_iso=now_iso,
+        skew_pct=round(skew, 3),
+        z_detrended=z,
+        z_classical=round(z_classical, 2) if z_classical is not None else None,
+        combined=combined,
+    )
+    save_verdict_history(verdict_history)
+
     result.update({
         "skew_pct": round(skew, 3),
         "zscore": z,
@@ -417,7 +496,7 @@ def main():
         "classification_legacy": classify_skew(z_legacy),
         "zscore_classical": round(z_classical, 2) if z_classical is not None else None,
         "classification_classical": classify_skew(z_classical),
-        "classification_combined": combined_classification(z, z_classical),
+        "classification_combined": combined,
         "history_points": len(prior_values),
         "meta": meta,
     })
