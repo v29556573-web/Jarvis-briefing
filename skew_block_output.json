@@ -1,25 +1,25 @@
 {
   "asset": "BTC",
-  "generated_at_utc": "2026-08-29T12:45:31Z",
-  "skew_pct": 1.48,
-  "zscore": 2.78,
+  "generated_at_utc": "2026-08-29T12:53:29Z",
+  "skew_pct": 1.46,
+  "zscore": 2.01,
   "classification": "CRITICAL_PUT_PREMIUM",
   "trend": {
-    "zscore": 2.78,
-    "trend_slope": -0.5645,
-    "trend_intercept": 4.8037,
-    "predicted_value": -3.1,
-    "residual": 4.58,
-    "residual_std": 1.6469,
+    "zscore": 2.01,
+    "trend_slope": -0.4556,
+    "trend_intercept": 3.9054,
+    "predicted_value": -2.472,
+    "residual": 3.932,
+    "residual_std": 1.961,
     "baseline_window": 14,
-    "baseline_start": "2026-08-15",
-    "baseline_end": "2026-08-28",
+    "baseline_start": "2026-08-16",
+    "baseline_end": "2026-08-29",
     "includes_current": false,
     "method": "linear_detrend"
   },
   "zscore_legacy_full_history": -0.62,
   "classification_legacy": "NORMAL",
-  "zscore_classical": 0.12,
+  "zscore_classical": 0.19,
   "classification_classical": "NORMAL",
   "classification_combined": {
     "verdict": "DIVERGENT",
@@ -27,15 +27,15 @@
     "escalate": true,
     "note": "Методы расходятся — автоматического вердикта нет, требуется ручное решение Viktor (§10.3 двойное чтение)."
   },
-  "history_points": 32,
+  "history_points": 33,
   "meta": {
     "expiry_ts": 1790323200000,
     "call_instrument": "BTC-25SEP26-84000-C",
-    "call_iv": 36.19,
-    "call_delta": 0.23284,
+    "call_iv": 36.23,
+    "call_delta": 0.23189,
     "put_instrument": "BTC-25SEP26-73000-P",
-    "put_iv": 37.67,
-    "put_delta": -0.24888,
-    "underlying_price": 77578.58
+    "put_iv": 37.69,
+    "put_delta": -0.24984,
+    "underlying_price": 77555.35
   }
 }

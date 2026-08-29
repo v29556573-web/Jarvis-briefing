@@ -1,6 +1,6 @@
 {
-  "timestamp_utc": "2026-08-29T12:45:31.313233+00:00",
-  "skew_latest": 1.480000000000004,
+  "timestamp_utc": "2026-08-29T12:53:29.420283+00:00",
+  "skew_latest": 1.4600000000000009,
   "skew_trailing_mean_14d": 1.134,
   "skew_trailing_std_14d": 2.8091,
   "skew_zscore": 0.12,
