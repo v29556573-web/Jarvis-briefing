@@ -1,0 +1,14 @@
+[
+  {
+    "date": "2026-08-29",
+    "snapshot_utc": "2026-08-29T18:12:43Z",
+    "skew_pct": 2.31,
+    "z_detrended": 2.43,
+    "z_classical": 0.51,
+    "verdict": "DIVERGENT",
+    "agreement": "DISAGREE",
+    "escalate": true,
+    "note": "Методы расходятся — автоматического вердикта нет, требуется ручное решение Viktor (§10.3 двойное чтение).",
+    "rule": "R3prime-2026-08-28"
+  }
+]
