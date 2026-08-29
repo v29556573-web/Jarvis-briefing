@@ -1,8 +1,6 @@
 name: Skew History Collector
-
 permissions:
   contents: write
-
 # Время съёма фиксировано внешним триггером cron-job.org на 07:15 UTC
 # (решение Viktor 29.08.2026). Собственное расписание GitHub снято:
 # на бесплатном tier оно плавало в диапазоне 06:23→18:50 UTC,
@@ -10,33 +8,27 @@ permissions:
 # смешивал внутридневную вариацию с межсуточной.
 on:
   workflow_dispatch: {}
-
 jobs:
   collect-skew:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
-
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-
       - name: Install dependencies
         run: pip install requests
-
       - name: Collect BTC skew data point
         run: python skew_block.py
-
       - name: Run skew cross-check
         run: python3 skew_crosscheck.py
-
       - name: Commit skew history
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-          git add skew_history.json skew_crosscheck_output.json skew_intraday.json skew_block_output.json
+          git add skew_history.json skew_crosscheck_output.json skew_intraday.json skew_block_output.json skew_verdict_history.json
           git diff --staged --quiet || git commit -m "Daily skew history point"
           git pull --rebase origin main
           git push
