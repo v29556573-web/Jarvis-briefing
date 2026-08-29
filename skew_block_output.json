@@ -1,25 +1,25 @@
 {
   "asset": "BTC",
-  "generated_at_utc": "2026-08-29T12:53:29Z",
-  "skew_pct": 1.46,
-  "zscore": 2.01,
+  "generated_at_utc": "2026-08-29T13:19:08Z",
+  "skew_pct": 1.52,
+  "zscore": 2.04,
   "classification": "CRITICAL_PUT_PREMIUM",
   "trend": {
-    "zscore": 2.01,
-    "trend_slope": -0.4556,
-    "trend_intercept": 3.9054,
-    "predicted_value": -2.472,
-    "residual": 3.932,
-    "residual_std": 1.961,
+    "zscore": 2.04,
+    "trend_slope": -0.4561,
+    "trend_intercept": 3.9077,
+    "predicted_value": -2.478,
+    "residual": 3.998,
+    "residual_std": 1.9585,
     "baseline_window": 14,
     "baseline_start": "2026-08-16",
     "baseline_end": "2026-08-29",
     "includes_current": false,
     "method": "linear_detrend"
   },
-  "zscore_legacy_full_history": -0.62,
+  "zscore_legacy_full_history": -0.59,
   "classification_legacy": "NORMAL",
-  "zscore_classical": 0.19,
+  "zscore_classical": 0.21,
   "classification_classical": "NORMAL",
   "classification_combined": {
     "verdict": "DIVERGENT",
@@ -31,11 +31,11 @@
   "meta": {
     "expiry_ts": 1790323200000,
     "call_instrument": "BTC-25SEP26-84000-C",
-    "call_iv": 36.23,
-    "call_delta": 0.23189,
+    "call_iv": 36.06,
+    "call_delta": 0.23494,
     "put_instrument": "BTC-25SEP26-73000-P",
-    "put_iv": 37.69,
-    "put_delta": -0.24984,
-    "underlying_price": 77555.35
+    "put_iv": 37.58,
+    "put_delta": -0.24536,
+    "underlying_price": 77672.44
   }
 }
