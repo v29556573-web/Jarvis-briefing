@@ -1,16 +1,16 @@
 {
-  "timestamp_utc": "2026-08-29T18:12:43.994317+00:00",
-  "skew_latest": 2.3100000000000023,
-  "skew_trailing_mean_14d": 1.134,
-  "skew_trailing_std_14d": 2.8091,
-  "skew_zscore": 0.42,
+  "timestamp_utc": "2026-08-30T07:15:35.890970+00:00",
+  "skew_latest": 1.7999999999999972,
+  "skew_trailing_mean_14d": 1.004,
+  "skew_trailing_std_14d": 2.7069,
+  "skew_zscore": 0.29,
   "critical_breach": false,
   "baseline": {
     "window": 14,
-    "start": "2026-08-15",
-    "end": "2026-08-28",
+    "start": "2026-08-16",
+    "end": "2026-08-29",
     "includes_current": false,
-    "latest_date": "2026-08-29"
+    "latest_date": "2026-08-30"
   },
   "note": "Skew в пределах нормы, кросс-чек не запускался. Используй force_check=True для ручного прогона."
 }
