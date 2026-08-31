@@ -1,17 +1,5 @@
 [
   {
-    "date": "2026-08-23",
-    "timestamp_utc": "2026-08-23T07:08:01Z",
-    "skew": 0.6299999999999955,
-    "value_type": "intraday"
-  },
-  {
-    "date": "2026-08-23",
-    "timestamp_utc": "2026-08-23T19:53:50Z",
-    "skew": -0.3299999999999983,
-    "value_type": "intraday"
-  },
-  {
     "date": "2026-08-24",
     "timestamp_utc": "2026-08-24T07:33:27Z",
     "skew": -0.9299999999999997,
@@ -69,6 +57,12 @@
     "date": "2026-08-30",
     "timestamp_utc": "2026-08-30T07:15:35Z",
     "skew": 1.7999999999999972,
+    "value_type": "intraday"
+  },
+  {
+    "date": "2026-08-31",
+    "timestamp_utc": "2026-08-31T07:15:38Z",
+    "skew": 0.44999999999999574,
     "value_type": "intraday"
   }
 ]
