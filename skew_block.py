@@ -51,6 +51,26 @@ append-only, НЕ last-write-wins на дату — в отличие от skew_
 расчёт z-score/baseline (тот считается только по skew_history.json,
 как раньше) — чисто аудит-лог эмитированных вердиктов.
 
+[РЕШЕНИЕ VIKTOR 28.08.2026 → В КОД 01.09.2026, R3′ двойного чтения]:
+combined_classification() РАНЕЕ реализовывал правило R2 (акт 23.08):
+CRITICAL только при согласии обеих ног ≥2.0/знак; NORMAL если обе <1.5;
+иначе DIVERGENT+escalate. Поле "rule" в append-логе при этом писало
+"R3prime-2026-08-28", хотя код выдавал R2 — расхождение зафиксировано
+29.08 (аудит показывал бы ложные срабатывания R3′). Настоящей правкой
+R3′ внесён в код, поле "rule" перестаёт врать.
+
+  R3′ — правило ОТЧЁТНОСТИ, не предиктор. Против цены не оценивается
+  ни при каком исходе (решение Viktor 28.08). Полосы на ногу:
+    N |z|<1.5 · S 1.5≤|z|<2.0 · C |z|≥2.0
+  1) обе ноги вне N (обе ≥1.5) И знаки различаются → DIVERGENT, escalate
+     [документированная инверсия]
+  2) пара полос (N,C) в любом порядке → DIVERGENT, escalate
+     [разрыв в две полосы]
+  3) иначе → вердикт по ноге с бо́льшим |z|, её знак, escalate=False.
+     CRITICAL требует ОБЕ ноги ≥2.0 (сохранение акта 23.08); пара (C,S)
+     даёт SIGNAL по знаку старшей ноги.
+  ВРЕМЕННОЕ. Точка пересмотра: 3-е стресс-событие ИЛИ 30.09.2026, что позже.
+
 Пороги (из памяти JARVIS "Mark50 Section 10"):
   Z-score ±1.5σ = сигнал, ±2.0σ = критично (институциональный tail-hedge)
 
@@ -78,6 +98,10 @@ BASELINE_WINDOW = 14  # канон [РЕШЕНИЕ VIKTOR 15.08.2026], един�
 TARGET_DELTA = 0.25
 TARGET_TENOR_DAYS = 30  # ищем экспирацию ближе всего к 30 дням вперёд
 TIMEOUT = 10
+
+# Полосы R3′ [РЕШЕНИЕ VIKTOR 28.08.2026]. Совпадают с порогами ±1.5/±2.0
+SIGNAL_THRESHOLD = 1.5
+CRITICAL_THRESHOLD = 2.0
 
 SESSION = requests.Session()
 
@@ -393,37 +417,109 @@ def compute_classical_zscore(prior_history, current_skew, lookback_days=BASELINE
     return (current_skew - mu) / sigma
 
 
+def _band(magnitude):
+    """Полоса ноги по |z| для R3′ [РЕШЕНИЕ VIKTOR 28.08.2026].
+    N |z|<1.5 · S 1.5≤|z|<2.0 · C |z|≥2.0."""
+    if magnitude >= CRITICAL_THRESHOLD:
+        return "C"
+    if magnitude >= SIGNAL_THRESHOLD:
+        return "S"
+    return "N"
+
+
 def combined_classification(z_detr, z_class):
-    """Двойное чтение [РЕШЕНИЕ VIKTOR 23.08.2026]. НЕ усредняет — маркирует.
-    - CRITICAL только при СОГЛАСИИ: оба |z|>=2.0 И совпадает знак.
-    - NORMAL: оба в норме (|z|<1.5 или отсутствуют).
-    - Иначе DIVERGENT: автоматического вердикта нет, эскалация Viktor.
-    Соответствует правилу Judge при directional conflict: не сглаживать.
+    """Двойное чтение по правилу R3′ [РЕШЕНИЕ VIKTOR 28.08.2026, в код 01.09.2026].
+    НЕ усредняет — маркирует. ВРЕМЕННОЕ правило, точка пересмотра: 3-е
+    стресс-событие ИЛИ 30.09.2026, что позже.
+
+    Полосы на ногу: N |z|<1.5 · S 1.5≤|z|<2.0 · C |z|≥2.0.
+
+    1) Обе ноги вне N (обе ≥1.5) И знаки различаются → DIVERGENT, escalate.
+       [документированная инверсия] — соответствует правилу Judge при
+       directional conflict: не сглаживать, требовать ручного решения Viktor.
+    2) Пара полос (N, C) в любом порядке → DIVERGENT, escalate.
+       [разрыв в две полосы] — одна нога критична, вторая в норме.
+    3) Иначе → вердикт по ноге с бо́льшим |z|, её знак, escalate=False.
+       Исключение: CRITICAL требует ОБЕ ноги ≥2.0 (сохранение акта 23.08).
+       Пара (C, S) → SIGNAL по знаку старшей ноги.
 
     [ДЕФЕКТ, ЗАРЕГИСТРИРОВАН 29.08.2026, НЕ ИСПРАВЛЕН — см. §12 реестр]:
     при z_detr is None (< BASELINE_WINDOW точек истории) da подставляется
-    как 0.0, а не как "нет данных". Если при этом ca < 1.5, функция вернёт
-    NORMAL, хотя корректный вердикт — INSUFFICIENT_HISTORY. Сейчас
-    неактуально (истории > 14 точек), но станет риском при сбросе
-    контейнера или добавлении нового инструмента (напр. ETH skew) без
-    накопленной истории. Не исправлено в этой правке — исправление не
-    запрошено, только регистрация дефекта.
+    как 0.0 (полоса N), а не как "нет данных". Если при этом вторая нога
+    тоже в N, функция вернёт NORMAL, хотя корректный вердикт —
+    INSUFFICIENT_HISTORY. Сейчас неактуально (истории > 14 точек), но
+    станет риском при сбросе контейнера или добавлении нового инструмента
+    (напр. ETH skew) без накопленной истории. Не исправлено в этой правке —
+    исправление не запрошено, только сохранена регистрация дефекта.
     """
     da = abs(z_detr) if z_detr is not None else 0.0
     ca = abs(z_class) if z_class is not None else 0.0
-    both_present = z_detr is not None and z_class is not None
-    same_sign = both_present and (z_detr > 0) == (z_class > 0)
+    band_d = _band(da)
+    band_c = _band(ca)
+    bands = {band_d, band_c}
 
-    if both_present and da >= 2.0 and ca >= 2.0 and same_sign:
-        side = "PUT_PREMIUM" if z_detr > 0 else "CALL_PREMIUM"
-        return {"verdict": f"CRITICAL_{side}", "agreement": "AGREE", "escalate": False}
-    if da < 1.5 and ca < 1.5:
-        return {"verdict": "NORMAL", "agreement": "AGREE", "escalate": False}
+    both_present = z_detr is not None and z_class is not None
+    signs_differ = both_present and (z_detr > 0) != (z_class > 0)
+
+    # R3′ п.1 — обе ноги ≥1.5σ и знаки противоположны: документированная инверсия
+    if band_d != "N" and band_c != "N" and signs_differ:
+        return {
+            "verdict": "DIVERGENT",
+            "agreement": "DISAGREE",
+            "escalate": True,
+            "note": ("R3′ п.1: обе ноги ≥1.5σ, знаки противоположны — "
+                     "документированная инверсия, авто-вердикта нет, "
+                     "ручное решение Viktor (§10.3 двойное чтение)."),
+        }
+
+    # R3′ п.2 — разрыв в две полосы (N, C): одна нога критична, вторая в норме
+    if bands == {"N", "C"}:
+        return {
+            "verdict": "DIVERGENT",
+            "agreement": "DISAGREE",
+            "escalate": True,
+            "note": ("R3′ п.2: разрыв в две полосы (N,C) — одна нога ≥2.0σ, "
+                     "другая <1.5σ; авто-вердикта нет, ручное решение "
+                     "Viktor (§10.3 двойное чтение)."),
+        }
+
+    # R3′ п.3 — вердикт по старшей ноге (бо́льший |z|), её знак, без эскалации.
+    if da >= ca:
+        senior_z, senior_mag, senior_leg = z_detr, da, "detrend"
+    else:
+        senior_z, senior_mag, senior_leg = z_class, ca, "classical"
+    senior_band = _band(senior_mag)
+
+    if senior_band == "N":
+        return {
+            "verdict": "NORMAL",
+            "agreement": "AGREE",
+            "escalate": False,
+            "note": "R3′ п.3: обе ноги <1.5σ.",
+        }
+
+    side = "PUT_PREMIUM" if (senior_z is not None and senior_z > 0) else "CALL_PREMIUM"
+
+    # CRITICAL требует ОБЕ ноги ≥2.0 (сохранение акта 23.08). К этому месту
+    # обе ноги ≥2.0 означает согласие знаков — противоположные знаки при
+    # обеих ≥1.5 уже отсеяны п.1.
+    if band_d == "C" and band_c == "C":
+        return {
+            "verdict": f"CRITICAL_{side}",
+            "agreement": "AGREE",
+            "escalate": False,
+            "note": (f"R3′ п.3: обе ноги ≥2.0σ, знак согласован — "
+                     f"CRITICAL по старшей ноге ({senior_leg})."),
+        }
+
+    # Пара (C,S) либо (S,S)/(N,S): старшая нога в S или C, но не обе C → SIGNAL
     return {
-        "verdict": "DIVERGENT",
-        "agreement": "DISAGREE",
-        "escalate": True,
-        "note": "Методы расходятся — автоматического вердикта нет, требуется ручное решение Viktor (§10.3 двойное чтение).",
+        "verdict": f"SIGNAL_{side}",
+        "agreement": "AGREE",
+        "escalate": False,
+        "note": (f"R3′ п.3: вердикт по старшей ноге ({senior_leg}, "
+                 f"|z|={round(senior_mag, 2)}); CRITICAL не выдан — "
+                 f"вторая нога <2.0σ."),
     }
 
 
