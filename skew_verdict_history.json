@@ -34,5 +34,17 @@
     "escalate": false,
     "note": null,
     "rule": "R3prime-2026-08-28"
+  },
+  {
+    "date": "2026-09-01",
+    "snapshot_utc": "2026-09-01T07:15:41Z",
+    "skew_pct": -0.13,
+    "z_detrended": 0.32,
+    "z_classical": -0.28,
+    "verdict": "NORMAL",
+    "agreement": "AGREE",
+    "escalate": false,
+    "note": null,
+    "rule": "R3prime-2026-08-28"
   }
 ]
