@@ -1,0 +1,802 @@
+[
+{
+"ts": 1785729600000,
+"open_interest_btc": 58012.192
+},
+{
+"ts": 1785744000000,
+"open_interest_btc": 59069.872
+},
+{
+"ts": 1785758400000,
+"open_interest_btc": 59595.797
+},
+{
+"ts": 1785772800000,
+"open_interest_btc": 58007.491
+},
+{
+"ts": 1785787200000,
+"open_interest_btc": 57311.541
+},
+{
+"ts": 1785801600000,
+"open_interest_btc": 57544.863
+},
+{
+"ts": 1785816000000,
+"open_interest_btc": 56418.384
+},
+{
+"ts": 1785830400000,
+"open_interest_btc": 57947.07
+},
+{
+"ts": 1785844800000,
+"open_interest_btc": 57885.433
+},
+{
+"ts": 1785859200000,
+"open_interest_btc": 59107.466
+},
+{
+"ts": 1785873600000,
+"open_interest_btc": 59366.916
+},
+{
+"ts": 1785888000000,
+"open_interest_btc": 58674.189
+},
+{
+"ts": 1785902400000,
+"open_interest_btc": 60074.658
+},
+{
+"ts": 1785916800000,
+"open_interest_btc": 59151.75
+},
+{
+"ts": 1785931200000,
+"open_interest_btc": 59486.071
+},
+{
+"ts": 1785945600000,
+"open_interest_btc": 59410.524
+},
+{
+"ts": 1785960000000,
+"open_interest_btc": 59772.95
+},
+{
+"ts": 1785974400000,
+"open_interest_btc": 60309.376
+},
+{
+"ts": 1785988800000,
+"open_interest_btc": 60402.528
+},
+{
+"ts": 1786003200000,
+"open_interest_btc": 60967.33
+},
+{
+"ts": 1786017600000,
+"open_interest_btc": 60999.406
+},
+{
+"ts": 1786032000000,
+"open_interest_btc": 59797.726
+},
+{
+"ts": 1786046400000,
+"open_interest_btc": 59692.898
+},
+{
+"ts": 1786060800000,
+"open_interest_btc": 59559.187
+},
+{
+"ts": 1786075200000,
+"open_interest_btc": 59445.134
+},
+{
+"ts": 1786089600000,
+"open_interest_btc": 59126.13
+},
+{
+"ts": 1786104000000,
+"open_interest_btc": 61375.341
+},
+{
+"ts": 1786118400000,
+"open_interest_btc": 61454.258
+},
+{
+"ts": 1786132800000,
+"open_interest_btc": 59441.498
+},
+{
+"ts": 1786147200000,
+"open_interest_btc": 59211.77
+},
+{
+"ts": 1786161600000,
+"open_interest_btc": 59165.732
+},
+{
+"ts": 1786176000000,
+"open_interest_btc": 59439.693
+},
+{
+"ts": 1786190400000,
+"open_interest_btc": 59447.462
+},
+{
+"ts": 1786204800000,
+"open_interest_btc": 59621.904
+},
+{
+"ts": 1786219200000,
+"open_interest_btc": 59617.988
+},
+{
+"ts": 1786233600000,
+"open_interest_btc": 59506.79
+},
+{
+"ts": 1786248000000,
+"open_interest_btc": 58704.918
+},
+{
+"ts": 1786262400000,
+"open_interest_btc": 58502.607
+},
+{
+"ts": 1786276800000,
+"open_interest_btc": 58530.187
+},
+{
+"ts": 1786291200000,
+"open_interest_btc": 59729.28
+},
+{
+"ts": 1786305600000,
+"open_interest_btc": 59928.65
+},
+{
+"ts": 1786320000000,
+"open_interest_btc": 59487.173
+},
+{
+"ts": 1786334400000,
+"open_interest_btc": 59708.399
+},
+{
+"ts": 1786348800000,
+"open_interest_btc": 60024.086
+},
+{
+"ts": 1786363200000,
+"open_interest_btc": 59711.344
+},
+{
+"ts": 1786377600000,
+"open_interest_btc": 57817.652
+},
+{
+"ts": 1786392000000,
+"open_interest_btc": 58852.604
+},
+{
+"ts": 1786406400000,
+"open_interest_btc": 58306.966
+},
+{
+"ts": 1786420800000,
+"open_interest_btc": 58655.701
+},
+{
+"ts": 1786435200000,
+"open_interest_btc": 58524.838
+},
+{
+"ts": 1786449600000,
+"open_interest_btc": 57884.68
+},
+{
+"ts": 1786464000000,
+"open_interest_btc": 57306.203
+},
+{
+"ts": 1786478400000,
+"open_interest_btc": 59218.97
+},
+{
+"ts": 1786492800000,
+"open_interest_btc": 59820.638
+},
+{
+"ts": 1786507200000,
+"open_interest_btc": 59582.662
+},
+{
+"ts": 1786521600000,
+"open_interest_btc": 59037.162
+},
+{
+"ts": 1786536000000,
+"open_interest_btc": 58227.978
+},
+{
+"ts": 1786550400000,
+"open_interest_btc": 58665.541
+},
+{
+"ts": 1786564800000,
+"open_interest_btc": 59975.641
+},
+{
+"ts": 1786579200000,
+"open_interest_btc": 60546.85
+},
+{
+"ts": 1786593600000,
+"open_interest_btc": 60824.906
+},
+{
+"ts": 1786608000000,
+"open_interest_btc": 60407.121
+},
+{
+"ts": 1786622400000,
+"open_interest_btc": 58945.309
+},
+{
+"ts": 1786636800000,
+"open_interest_btc": 58138.668
+},
+{
+"ts": 1786651200000,
+"open_interest_btc": 60324.978
+},
+{
+"ts": 1786665600000,
+"open_interest_btc": 60394.042
+},
+{
+"ts": 1786680000000,
+"open_interest_btc": 60781.114
+},
+{
+"ts": 1786694400000,
+"open_interest_btc": 64366.372
+},
+{
+"ts": 1786708800000,
+"open_interest_btc": 67658.428
+},
+{
+"ts": 1786723200000,
+"open_interest_btc": 67605.553
+},
+{
+"ts": 1786737600000,
+"open_interest_btc": 66250.258
+},
+{
+"ts": 1786752000000,
+"open_interest_btc": 65990.47
+},
+{
+"ts": 1786766400000,
+"open_interest_btc": 66013.912
+},
+{
+"ts": 1786780800000,
+"open_interest_btc": 65758.96
+},
+{
+"ts": 1786795200000,
+"open_interest_btc": 65304.986
+},
+{
+"ts": 1786809600000,
+"open_interest_btc": 65101.295
+},
+{
+"ts": 1786824000000,
+"open_interest_btc": 64990.788
+},
+{
+"ts": 1786838400000,
+"open_interest_btc": 65128.12
+},
+{
+"ts": 1786852800000,
+"open_interest_btc": 65159.767
+},
+{
+"ts": 1786867200000,
+"open_interest_btc": 65098.936
+},
+{
+"ts": 1786881600000,
+"open_interest_btc": 64851.016
+},
+{
+"ts": 1786896000000,
+"open_interest_btc": 64808.222
+},
+{
+"ts": 1786910400000,
+"open_interest_btc": 64552.69
+},
+{
+"ts": 1786924800000,
+"open_interest_btc": 64424.144
+},
+{
+"ts": 1786939200000,
+"open_interest_btc": 63632.082
+},
+{
+"ts": 1786953600000,
+"open_interest_btc": 60328.201
+},
+{
+"ts": 1786968000000,
+"open_interest_btc": 60002.034
+},
+{
+"ts": 1786982400000,
+"open_interest_btc": 60869.21
+},
+{
+"ts": 1786996800000,
+"open_interest_btc": 61523.117
+},
+{
+"ts": 1787011200000,
+"open_interest_btc": 62183.699
+},
+{
+"ts": 1787025600000,
+"open_interest_btc": 61399.672
+},
+{
+"ts": 1787040000000,
+"open_interest_btc": 60850.612
+},
+{
+"ts": 1787054400000,
+"open_interest_btc": 61028.747
+},
+{
+"ts": 1787068800000,
+"open_interest_btc": 63248.302
+},
+{
+"ts": 1787083200000,
+"open_interest_btc": 63332.199
+},
+{
+"ts": 1787097600000,
+"open_interest_btc": 62487.342
+},
+{
+"ts": 1787112000000,
+"open_interest_btc": 60750.866
+},
+{
+"ts": 1787126400000,
+"open_interest_btc": 60176.024
+},
+{
+"ts": 1787140800000,
+"open_interest_btc": 59843.661
+},
+{
+"ts": 1787155200000,
+"open_interest_btc": 58715.488
+},
+{
+"ts": 1787169600000,
+"open_interest_btc": 59793.617
+},
+{
+"ts": 1787184000000,
+"open_interest_btc": 57326.523
+},
+{
+"ts": 1787198400000,
+"open_interest_btc": 57926.054
+},
+{
+"ts": 1787212800000,
+"open_interest_btc": 58941.835
+},
+{
+"ts": 1787227200000,
+"open_interest_btc": 56394.01
+},
+{
+"ts": 1787241600000,
+"open_interest_btc": 55754.284
+},
+{
+"ts": 1787256000000,
+"open_interest_btc": 55353.261
+},
+{
+"ts": 1787270400000,
+"open_interest_btc": 54903.025
+},
+{
+"ts": 1787284800000,
+"open_interest_btc": 53107.295
+},
+{
+"ts": 1787299200000,
+"open_interest_btc": 51315.3
+},
+{
+"ts": 1787313600000,
+"open_interest_btc": 49210.074
+},
+{
+"ts": 1787328000000,
+"open_interest_btc": 49477.661
+},
+{
+"ts": 1787342400000,
+"open_interest_btc": 48919.528
+},
+{
+"ts": 1787356800000,
+"open_interest_btc": 49042.727
+},
+{
+"ts": 1787371200000,
+"open_interest_btc": 48602.614
+},
+{
+"ts": 1787385600000,
+"open_interest_btc": 47889.378
+},
+{
+"ts": 1787400000000,
+"open_interest_btc": 47949.093
+},
+{
+"ts": 1787414400000,
+"open_interest_btc": 48498.753
+},
+{
+"ts": 1787428800000,
+"open_interest_btc": 48593.596
+},
+{
+"ts": 1787443200000,
+"open_interest_btc": 48434.088
+},
+{
+"ts": 1787457600000,
+"open_interest_btc": 48194.086
+},
+{
+"ts": 1787472000000,
+"open_interest_btc": 49509.0
+},
+{
+"ts": 1787486400000,
+"open_interest_btc": 49320.35
+},
+{
+"ts": 1787500800000,
+"open_interest_btc": 48560.166
+},
+{
+"ts": 1787515200000,
+"open_interest_btc": 48110.528
+},
+{
+"ts": 1787529600000,
+"open_interest_btc": 47983.485
+},
+{
+"ts": 1787544000000,
+"open_interest_btc": 47927.537
+},
+{
+"ts": 1787558400000,
+"open_interest_btc": 48581.747
+},
+{
+"ts": 1787572800000,
+"open_interest_btc": 49273.919
+},
+{
+"ts": 1787587200000,
+"open_interest_btc": 47171.431
+},
+{
+"ts": 1787601600000,
+"open_interest_btc": 47719.754
+},
+{
+"ts": 1787616000000,
+"open_interest_btc": 47653.788
+},
+{
+"ts": 1787630400000,
+"open_interest_btc": 47748.851
+},
+{
+"ts": 1787644800000,
+"open_interest_btc": 47168.731
+},
+{
+"ts": 1787659200000,
+"open_interest_btc": 47854.181
+},
+{
+"ts": 1787673600000,
+"open_interest_btc": 48775.503
+},
+{
+"ts": 1787688000000,
+"open_interest_btc": 48922.493
+},
+{
+"ts": 1787702400000,
+"open_interest_btc": 47392.494
+},
+{
+"ts": 1787716800000,
+"open_interest_btc": 47320.322
+},
+{
+"ts": 1787731200000,
+"open_interest_btc": 47483.187
+},
+{
+"ts": 1787745600000,
+"open_interest_btc": 46957.111
+},
+{
+"ts": 1787760000000,
+"open_interest_btc": 47920.172
+},
+{
+"ts": 1787774400000,
+"open_interest_btc": 47222.62
+},
+{
+"ts": 1787788800000,
+"open_interest_btc": 48000.907
+},
+{
+"ts": 1787803200000,
+"open_interest_btc": 47945.684
+},
+{
+"ts": 1787817600000,
+"open_interest_btc": 47872.953
+},
+{
+"ts": 1787832000000,
+"open_interest_btc": 48965.096
+},
+{
+"ts": 1787846400000,
+"open_interest_btc": 49149.362
+},
+{
+"ts": 1787860800000,
+"open_interest_btc": 48569.307
+},
+{
+"ts": 1787875200000,
+"open_interest_btc": 48566.75
+},
+{
+"ts": 1787889600000,
+"open_interest_btc": 48632.659
+},
+{
+"ts": 1787904000000,
+"open_interest_btc": 48138.461
+},
+{
+"ts": 1787918400000,
+"open_interest_btc": 48479.21
+},
+{
+"ts": 1787932800000,
+"open_interest_btc": 49316.193
+},
+{
+"ts": 1787947200000,
+"open_interest_btc": 50267.152
+},
+{
+"ts": 1787961600000,
+"open_interest_btc": 49541.535
+},
+{
+"ts": 1787976000000,
+"open_interest_btc": 49246.418
+},
+{
+"ts": 1787990400000,
+"open_interest_btc": 48933.659
+},
+{
+"ts": 1788004800000,
+"open_interest_btc": 48925.166
+},
+{
+"ts": 1788019200000,
+"open_interest_btc": 49257.19
+},
+{
+"ts": 1788033600000,
+"open_interest_btc": 50087.754
+},
+{
+"ts": 1788048000000,
+"open_interest_btc": 49904.448
+},
+{
+"ts": 1788062400000,
+"open_interest_btc": 49879.649
+},
+{
+"ts": 1788076800000,
+"open_interest_btc": 49762.002
+},
+{
+"ts": 1788091200000,
+"open_interest_btc": 50148.688
+},
+{
+"ts": 1788105600000,
+"open_interest_btc": 49555.23
+},
+{
+"ts": 1788120000000,
+"open_interest_btc": 48976.956
+},
+{
+"ts": 1788134400000,
+"open_interest_btc": 48917.359
+},
+{
+"ts": 1788148800000,
+"open_interest_btc": 48902.714
+},
+{
+"ts": 1788163200000,
+"open_interest_btc": 49665.221
+},
+{
+"ts": 1788177600000,
+"open_interest_btc": 50438.506
+},
+{
+"ts": 1788192000000,
+"open_interest_btc": 52620.185
+},
+{
+"ts": 1788206400000,
+"open_interest_btc": 53098.991
+},
+{
+"ts": 1788220800000,
+"open_interest_btc": 52987.893
+},
+{
+"ts": 1788235200000,
+"open_interest_btc": 52900.486
+},
+{
+"ts": 1788249600000,
+"open_interest_btc": 53157.504
+},
+{
+"ts": 1788264000000,
+"open_interest_btc": 53665.823
+},
+{
+"ts": 1788278400000,
+"open_interest_btc": 54088.525
+},
+{
+"ts": 1788292800000,
+"open_interest_btc": 54925.112
+},
+{
+"ts": 1788307200000,
+"open_interest_btc": 54412.351
+},
+{
+"ts": 1788321600000,
+"open_interest_btc": 54789.238
+},
+{
+"ts": 1788336000000,
+"open_interest_btc": 55138.994
+},
+{
+"ts": 1788350400000,
+"open_interest_btc": 55826.374
+},
+{
+"ts": 1788364800000,
+"open_interest_btc": 55699.354
+},
+{
+"ts": 1788379200000,
+"open_interest_btc": 55425.916
+},
+{
+"ts": 1788393600000,
+"open_interest_btc": 55112.919
+},
+{
+"ts": 1788408000000,
+"open_interest_btc": 55506.657
+},
+{
+"ts": 1788422400000,
+"open_interest_btc": 55134.687
+},
+{
+"ts": 1788436800000,
+"open_interest_btc": 54880.248
+},
+{
+"ts": 1788451200000,
+"open_interest_btc": 57145.968
+},
+{
+"ts": 1788465600000,
+"open_interest_btc": 59149.501
+},
+{
+"ts": 1788480000000,
+"open_interest_btc": 58532.6
+},
+{
+"ts": 1788494400000,
+"open_interest_btc": 58636.681
+},
+{
+"ts": 1788508800000,
+"open_interest_btc": 58107.127
+},
+{
+"ts": 1788523200000,
+"open_interest_btc": 57429.611
+},
+{
+"ts": 1788537600000,
+"open_interest_btc": 55940.915
+},
+{
+"ts": 1788552000000,
+"open_interest_btc": 55506.247
+},
+{
+"ts": 1788566400000,
+"open_interest_btc": 55304.433
+},
+{
+"ts": 1788580800000,
+"open_interest_btc": 55486.246
+},
+{
+"ts": 1788595200000,
+"open_interest_btc": 55311.201
+}
+]
