@@ -1,0 +1,93 @@
+[
+  {
+    "n": 15,
+    "date": "2026-08-27",
+    "contract": "BTCU26",
+    "future_usd": 80280,
+    "spot_usd": 79943.32,
+    "dte": 29,
+    "b_abs_pct": 0.4211,
+    "b_ann_pct": 5.3007,
+    "delta_b_abs_pct": null,
+    "settle_check": "ok",
+    "source": "CME BasisWatch"
+  },
+  {
+    "n": 16,
+    "date": "2026-08-28",
+    "contract": "BTCU26",
+    "future_usd": 77835,
+    "spot_usd": 77542.50,
+    "dte": 28,
+    "b_abs_pct": 0.3772,
+    "b_ann_pct": 4.9172,
+    "delta_b_abs_pct": -0.0439,
+    "settle_check": "ok",
+    "source": "CME BasisWatch"
+  },
+  {
+    "n": 17,
+    "date": "2026-08-31",
+    "contract": "BTCU26",
+    "future_usd": 79245,
+    "spot_usd": 78926.98,
+    "dte": 25,
+    "b_abs_pct": 0.4029,
+    "b_ann_pct": 5.8828,
+    "delta_b_abs_pct": 0.0257,
+    "settle_check": "ok",
+    "source": "CME BasisWatch"
+  },
+  {
+    "n": 18,
+    "date": "2026-09-01",
+    "contract": "BTCU26",
+    "future_usd": 77545,
+    "spot_usd": 77265.82,
+    "dte": 24,
+    "b_abs_pct": 0.3613,
+    "b_ann_pct": 5.4951,
+    "delta_b_abs_pct": -0.0416,
+    "settle_check": "ok",
+    "source": "CME BasisWatch"
+  },
+  {
+    "n": 19,
+    "date": "2026-09-02",
+    "contract": "BTCU26",
+    "future_usd": 77580,
+    "spot_usd": 77297.84,
+    "dte": 23,
+    "b_abs_pct": 0.3650,
+    "b_ann_pct": 5.7929,
+    "delta_b_abs_pct": 0.0037,
+    "settle_check": "ok",
+    "source": "CME BasisWatch"
+  },
+  {
+    "n": 20,
+    "date": "2026-09-03",
+    "contract": "BTCU26",
+    "future_usd": 82080,
+    "spot_usd": 81761.78,
+    "dte": 22,
+    "b_abs_pct": 0.3892,
+    "b_ann_pct": 6.4572,
+    "delta_b_abs_pct": 0.0242,
+    "settle_check": "ok",
+    "source": "CME BasisWatch"
+  },
+  {
+    "n": 21,
+    "date": "2026-09-04",
+    "contract": "BTCU26",
+    "future_usd": 80055,
+    "spot_usd": 79788.29,
+    "dte": 21,
+    "b_abs_pct": 0.3343,
+    "b_ann_pct": 5.8100,
+    "delta_b_abs_pct": -0.0549,
+    "settle_check": "ok",
+    "source": "CME BasisWatch"
+  }
+]
