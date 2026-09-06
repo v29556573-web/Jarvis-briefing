@@ -94,5 +94,17 @@
     "escalate": false,
     "note": "R3′ п.3: обе ноги <1.5σ.",
     "rule": "R3prime-2026-08-28"
+  },
+  {
+    "date": "2026-09-06",
+    "snapshot_utc": "2026-09-06T07:15:42Z",
+    "skew_pct": -1.91,
+    "z_detrended": -1.3,
+    "z_classical": -0.95,
+    "verdict": "NORMAL",
+    "agreement": "AGREE",
+    "escalate": false,
+    "note": "R3′ п.3: обе ноги <1.5σ.",
+    "rule": "R3prime-2026-08-28"
   }
 ]
