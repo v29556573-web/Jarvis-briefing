@@ -1,25 +1,25 @@
 {
   "asset": "BTC",
-  "generated_at_utc": "2026-09-08T07:15:42Z",
-  "skew_pct": -0.08,
-  "zscore": 0.36,
+  "generated_at_utc": "2026-09-09T07:15:41Z",
+  "skew_pct": -1.61,
+  "zscore": -0.33,
   "classification": "NORMAL",
   "trend": {
-    "zscore": 0.36,
-    "trend_slope": -0.0222,
-    "trend_intercept": -0.3917,
-    "predicted_value": -0.702,
-    "residual": 0.622,
-    "residual_std": 1.7101,
+    "zscore": -0.33,
+    "trend_slope": -0.1197,
+    "trend_intercept": 0.5146,
+    "predicted_value": -1.161,
+    "residual": -0.449,
+    "residual_std": 1.3552,
     "baseline_window": 14,
-    "baseline_start": "2026-08-25",
-    "baseline_end": "2026-09-07",
+    "baseline_start": "2026-08-26",
+    "baseline_end": "2026-09-08",
     "includes_current": false,
     "method": "linear_detrend"
   },
-  "zscore_legacy_full_history": -0.87,
+  "zscore_legacy_full_history": -1.39,
   "classification_legacy": "NORMAL",
-  "zscore_classical": 0.27,
+  "zscore_classical": -0.94,
   "classification_classical": "NORMAL",
   "classification_combined": {
     "verdict": "NORMAL",
@@ -27,15 +27,15 @@
     "escalate": false,
     "note": "R3′ п.3: обе ноги <1.5σ."
   },
-  "history_points": 42,
+  "history_points": 43,
   "meta": {
     "expiry_ts": 1790323200000,
-    "call_instrument": "BTC-25SEP26-83000-C",
-    "call_iv": 37.39,
-    "call_delta": 0.25648,
+    "call_instrument": "BTC-25SEP26-84000-C",
+    "call_iv": 40.92,
+    "call_delta": 0.26932,
     "put_instrument": "BTC-25SEP26-75000-P",
-    "put_iv": 37.31,
-    "put_delta": -0.27367,
-    "underlying_price": 78371.53
+    "put_iv": 39.31,
+    "put_delta": -0.23237,
+    "underlying_price": 79275.03
   }
 }
