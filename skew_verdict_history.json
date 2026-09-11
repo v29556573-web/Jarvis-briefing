@@ -154,5 +154,17 @@
     "escalate": false,
     "note": "R3′ п.3: обе ноги <1.5σ.",
     "rule": "R3prime-2026-08-28"
+  },
+  {
+    "date": "2026-09-11",
+    "snapshot_utc": "2026-09-11T07:15:39Z",
+    "skew_pct": 1.53,
+    "z_detrended": 4.24,
+    "z_classical": 1.27,
+    "verdict": "DIVERGENT",
+    "agreement": "DISAGREE",
+    "escalate": true,
+    "note": "R3′ п.2: разрыв в две полосы (N,C) — одна нога ≥2.0σ, другая <1.5σ; авто-вердикта нет, ручное решение Viktor (§10.3 двойное чтение).",
+    "rule": "R3prime-2026-08-28"
   }
 ]
