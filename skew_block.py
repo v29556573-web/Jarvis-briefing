@@ -458,7 +458,11 @@ def compute_detrended_zscore(prior_history, current_skew, lookback_days=BASELINE
     z = residual_current / denom if denom != 0 else None
   
     return {
-        "zscore": round(z, 2) if z is not None else None,
+        # [ПАТЧ ЭТАП 1] D: округление УБРАНО из управляющего значения.
+        # round(z,2) шло в combined_classification, а классическая нога —
+        # нет: асимметрия. z=1.9951 округлялся до 2.0 и попадал в полосу C.
+        "zscore": z,
+        "zscore_rounded": round(z, 2) if z is not None else None,
         "trend_slope": round(slope, 4),
         "trend_intercept": round(intercept, 4),
         "predicted_value": round(predicted_current, 3),
