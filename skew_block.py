@@ -82,7 +82,7 @@ import os
 import sys
 import time
 from datetime import datetime, timezone, timedelta
-from statistics import mean, pstdev
+from statistics import mean, pstdev, stdev
 
 import requests
 
