@@ -438,7 +438,6 @@ def compute_detrended_zscore(prior_history, current_skew, lookback_days=BASELINE
 
     slope, intercept = linear_regression(xs, ys)
     residuals = [y - (slope * x + intercept) for x, y in zip(xs, ys)]
-    residual_std = pstdev(residuals)
 
         # [ПАТЧ ЭТАП 1] A: делитель n-2, оценены ДВА параметра (наклон, сдвиг).
     # pstdev делил на n -> систематическое занижение sigma -> завышение |z|.
