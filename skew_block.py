@@ -403,6 +403,8 @@ def append_verdict(records, *, timestamp_iso, skew_pct, z_detrended, z_classical
         "escalate": combined.get("escalate"),
         "note": combined.get("note"),
         "rule": "R3prime-2026-08-28",
+        "formula_version": "v2-corrected-2026-09-12",
+        "thresholds": list(band_thresholds(BASELINE_WINDOW)),
     })
     return records
 
