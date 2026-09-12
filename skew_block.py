@@ -438,10 +438,25 @@ def compute_detrended_zscore(prior_history, current_skew, lookback_days=BASELINE
     residuals = [y - (slope * x + intercept) for x, y in zip(xs, ys)]
     residual_std = pstdev(residuals)
 
-    predicted_current = slope * lookback_days + intercept  # экстраполяция на следующий шаг (индекс 14)
-    residual_current = current_skew - predicted_current
-    z = residual_current / residual_std if residual_std != 0 else None
+        # [ПАТЧ ЭТАП 1] A: делитель n-2, оценены ДВА параметра (наклон, сдвиг).
+    # pstdev делил на n -> систематическое занижение sigma -> завышение |z|.
+    ss_res = sum(r * r for r in residuals)
+    residual_std = (ss_res / (lookback_days - 2)) ** 0.5
 
+    predicted_current = slope * lookback_days + intercept  # экстраполяция на индекс 14
+    residual_current = current_skew - predicted_current
+
+    # [ПАТЧ ЭТАП 1] B: остаток берётся против ЭКСТРАПОЛЯЦИИ. У прогноза своя
+    # погрешность: разброс (факт - прогноз) шире sigma в sqrt(1+leverage) раз.
+    # При W=14 фактор = 1.1483. Нормировка шла на голую sigma.
+    mean_x = (lookback_days - 1) / 2.0
+    sxx = sum((i - mean_x) ** 2 for i in xs)
+    leverage = 1.0 / lookback_days + (lookback_days - mean_x) ** 2 / sxx
+    pred_factor = (1.0 + leverage) ** 0.5
+
+    denom = residual_std * pred_factor
+    z = residual_current / denom if denom != 0 else None
+  
     return {
         "zscore": round(z, 2) if z is not None else None,
         "trend_slope": round(slope, 4),
