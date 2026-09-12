@@ -516,11 +516,14 @@ def compute_classical_zscore(prior_history, current_skew, lookback_days=BASELINE
 
 
 def _band(magnitude):
-    """Полоса ноги по |z| для R3′ [РЕШЕНИЕ VIKTOR 28.08.2026].
-    N |z|<1.5 · S 1.5≤|z|<2.0 · C |z|≥2.0."""
-    if magnitude >= CRITICAL_THRESHOLD:
+    """Полоса ноги по |z| для R3'.
+    [ПАТЧ ЭТАП 1] C: пороги — t-квантили для хвостов 4.55%/13.36%,
+    не фиксированные 2.0/1.5. При W=14: C=2.2314, S=1.6090.
+    Логика R3' НЕ МЕНЯЕТСЯ — меняются только границы полос."""
+    thr_c, thr_s = band_thresholds(BASELINE_WINDOW)
+    if magnitude >= thr_c:
         return "C"
-    if magnitude >= SIGNAL_THRESHOLD:
+    if magnitude >= thr_s:
         return "S"
     return "N"
 
