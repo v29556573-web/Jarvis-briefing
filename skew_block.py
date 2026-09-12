@@ -435,15 +435,13 @@ def compute_detrended_zscore(prior_history, current_skew, lookback_days=BASELINE
     baseline = prior_history[-lookback_days:]
     xs = list(range(lookback_days))  # 0..13, порядок по возрастанию даты
     ys = [pt["skew"] for pt in baseline]
-
     slope, intercept = linear_regression(xs, ys)
     residuals = [y - (slope * x + intercept) for x, y in zip(xs, ys)]
 
-        # [ПАТЧ ЭТАП 1] A: делитель n-2, оценены ДВА параметра (наклон, сдвиг).
+    # [ПАТЧ ЭТАП 1] A: делитель n-2, оценены ДВА параметра (наклон, сдвиг).
     # pstdev делил на n -> систематическое занижение sigma -> завышение |z|.
     ss_res = sum(r * r for r in residuals)
     residual_std = (ss_res / (lookback_days - 2)) ** 0.5
-
     predicted_current = slope * lookback_days + intercept  # экстраполяция на индекс 14
     residual_current = current_skew - predicted_current
 
@@ -454,7 +452,6 @@ def compute_detrended_zscore(prior_history, current_skew, lookback_days=BASELINE
     sxx = sum((i - mean_x) ** 2 for i in xs)
     leverage = 1.0 / lookback_days + (lookback_days - mean_x) ** 2 / sxx
     pred_factor = (1.0 + leverage) ** 0.5
-
     denom = residual_std * pred_factor
     z = residual_current / denom if denom != 0 else None
   
