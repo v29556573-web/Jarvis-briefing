@@ -506,9 +506,10 @@ def compute_classical_zscore(prior_history, current_skew, lookback_days=BASELINE
     """
     if len(prior_history) < lookback_days:
         return None
-    baseline = [pt["skew"] for pt in prior_history[-lookback_days:]]
+        baseline = [pt["skew"] for pt in prior_history[-lookback_days:]]
     mu = mean(baseline)
-    sigma = pstdev(baseline)
+    # [ПАТЧ ЭТАП 1] A: выборочный std требует делителя n-1, было n.
+    sigma = stdev(baseline)
     if sigma == 0:
         return None
     return (current_skew - mu) / sigma
