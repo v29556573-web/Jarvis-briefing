@@ -695,7 +695,9 @@ def main():
         "classification": classify_skew(z),
         "trend": detrended if detrended else "INSUFFICIENT_HISTORY",
         "zscore_legacy_full_history": round(z_legacy, 2) if z_legacy is not None else None,
-        "classification_legacy": classify_skew(z_legacy),
+        # legacy: full-history z, df != W-2 -> t-квантиль окна неприменим.
+        # Оставлен на 2.0/1.5. Reference only, не для алертинга.
+        "classification_legacy": classify_skew(z_legacy, thresholds=(2.0, 1.5)),
         "zscore_classical": round(z_classical, 2) if z_classical is not None else None,
         "classification_classical": classify_skew(z_classical),
         "classification_combined": combined,
