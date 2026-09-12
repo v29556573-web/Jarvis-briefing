@@ -655,17 +655,24 @@ def main():
         print(json.dumps(result, indent=2, ensure_ascii=False))
         return
 
-    history = load_history()
-    prior_values = [h["skew"] for h in history]  # история ДО сегодняшней точки
+    now_iso = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    today = now_iso[:10]
 
-    detrended = compute_detrended_zscore(history, skew)
+    history = load_history()
+    # [ПАТЧ ЭТАП 1, З6] При ПОВТОРНОМ прогоне в сутки файл уже содержит
+    # сегодняшнюю точку от раннего прогона. append_today() чистит дубль
+    # ПОСЛЕ расчёта, поэтому baseline включал бы собственную утреннюю
+    # запись, а includes_current:False лгало бы. Чистим ДО расчёта.
+    prior_history = [h for h in history if h.get("date") != today]
+    rerun_today = len(prior_history) != len(history)
+
+    prior_values = [h["skew"] for h in prior_history]
+
+    detrended = compute_detrended_zscore(prior_history, skew)
     z = detrended["zscore"] if detrended else None
 
     z_legacy = rolling_zscore_legacy(prior_values, skew)
-    z_classical = compute_classical_zscore(history, skew)
-
-    now_iso = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-
+    z_classical = compute_classical_zscore(prior_history, skew)
     history = append_today(history, skew, now_iso)
     save_history(history)
 
@@ -703,6 +710,8 @@ def main():
         "classification_combined": combined,
         "history_points": len(prior_values),
         "meta": meta,
+        "rerun_same_day": rerun_today,
+        "formula_version": "v2-corrected-2026-09-12",
     })
 
     # [РЕШЕНИЕ VIKTOR 16.08.2026]: результат коммитится в файл — Cloud-рутины
