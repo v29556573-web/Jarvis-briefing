@@ -61,18 +61,65 @@ R3′ внесён в код, поле "rule" перестаёт врать.
 
   R3′ — правило ОТЧЁТНОСТИ, не предиктор. Против цены не оценивается
   ни при каком исходе (решение Viktor 28.08). Полосы на ногу:
-    N |z|<1.5 · S 1.5≤|z|<2.0 · C |z|≥2.0
-  1) обе ноги вне N (обе ≥1.5) И знаки различаются → DIVERGENT, escalate
+    N |z|<thr_S · S thr_S≤|z|<thr_C · C |z|≥thr_C
+  1) обе ноги вне N И знаки различаются → DIVERGENT, escalate
      [документированная инверсия]
   2) пара полос (N,C) в любом порядке → DIVERGENT, escalate
      [разрыв в две полосы]
   3) иначе → вердикт по ноге с бо́льшим |z|, её знак, escalate=False.
-     CRITICAL требует ОБЕ ноги ≥2.0 (сохранение акта 23.08); пара (C,S)
-     даёт SIGNAL по знаку старшей ноги.
+     CRITICAL требует ОБЕ ноги в полосе C (сохранение акта 23.08);
+     пара (C,S) даёт SIGNAL по знаку старшей ноги.
   ВРЕМЕННОЕ. Точка пересмотра: 3-е стресс-событие ИЛИ 30.09.2026, что позже.
 
-Пороги (из памяти JARVIS "Mark50 Section 10"):
-  Z-score ±1.5σ = сигнал, ±2.0σ = критично (институциональный tail-hedge)
+=====================================================================
+[ПАТЧ ЭТАП 1, 12.09.2026 — ратифицировано Viktor 12.09.2026]
+=====================================================================
+Три исправления АРИФМЕТИКИ. Ни одно не является подбором параметра,
+калибровки не требуют. Логика R3′ НЕ МЕНЯЛАСЬ.
+
+  A. ДЕЛИТЕЛЬ. Остатки регрессии делились на n (pstdev). Оценены ДВА
+     параметра (наклон, сдвиг) -> несмещённый делитель n-2. Классическая
+     нога: выборочный std требует n-1, было n.
+
+  B. ДИСПЕРСИЯ ПРОГНОЗА. Остаток берётся против ЭКСТРАПОЛЯЦИИ тренда на
+     t=W. У предсказания своя погрешность: разброс (факт - прогноз) шире
+     sigma в sqrt(1 + 1/W + (W-tb)^2/Sxx) раз. При W=14 = 1.1483.
+     Нормировка шла на голую sigma.
+
+  C. ПОЛОСЫ В ВЕРОЯТНОСТИ, НЕ В СИГМАХ. Пороги 2.0/1.5 подразумевают
+     хвосты 4.55%/13.36%. При ОЦЕНЁННОЙ sigma распределение t(W-2), не
+     нормальное. Пороги = t-квантили для тех же вероятностей. При W=14:
+     C=2.2314, S=1.6090. При W->inf сходятся к 2.0/1.5.
+
+  D. ОКРУГЛЕНИЕ. round(z,2) шло в combined_classification для детренд-ноги,
+     а классическая передавалась сырой — асимметрия. z=1.9951 округлялся
+     до 2.0 и попадал в полосу C. Округление убрано из управляющего пути.
+
+  E. ПОВТОРНЫЙ ПРОГОН В СУТКИ. load_history() читает файл, уже содержащий
+     сегодняшнюю точку от раннего прогона; append_today() чистит дубль
+     ПОСЛЕ расчёта. Baseline второго прогона включал собственную утреннюю
+     запись, а includes_current:False лгало. Чистим ДО расчёта.
+
+СОВОКУПНЫЙ ЭФФЕКТ на ряде 47 точек (26.07-12.09.2026):
+  вердикт меняется на 10 днях из 33 · |z| в полосе C: 27.3% -> 15.2%
+  эскалаций DIVERGENT: 8 -> 5
+
+ЗАЯВЛЕНО ДО ВНЕДРЕНИЯ: Этап 1 калибровку НЕ ЗАКРЫВАЕТ. Цель 4.6%,
+остаётся превышение в 3.3x — это ДЛИНА ОКНА, Этап 2 (пре-регистрация,
+выборка строго с 13.09.2026). Коридор проверки через 30 дней: 2-9%.
+
+НЕ СДЕЛАНО ЭТИМ ПАТЧЕМ (отдельные пункты, молча не вносить):
+  - длина окна W=14 -> Этап 2
+  - skew_crosscheck.py НЕ ПРИВЕДЁН В СООТВЕТСТВИЕ: там pstdev (делитель n),
+    здесь stdev (n-1). Отношение sqrt(14/13)=1.0377 — две ноги одной
+    методологии считают РАЗНЫМИ формулами. Докстринг ниже утверждает
+    тождественность — на 12.09.2026 это НЕВЕРНО. Требует правки.
+  - гейт кросс-чека на critical_breach вместо escalate
+  - строка "Skew в пределах нормы" при вердикте DIVERGENT
+  - переименование меток CRITICAL_PUT_PREMIUM -> PUT_PREMIUM_SPIKE
+  - NORMAL-маскировка при z_detr is None (§12, зарегистрирован 29.08)
+  - контаминированные точки 28.08 и 29.08 внутри рабочей базы
+  - первые 19 точек ряда без поля value_type
 
 Зависимости: requests
 """
@@ -99,19 +146,21 @@ TARGET_DELTA = 0.25
 TARGET_TENOR_DAYS = 30  # ищем экспирацию ближе всего к 30 дням вперёд
 TIMEOUT = 10
 
-# Полосы R3′ [РЕШЕНИЕ VIKTOR 28.08.2026]. Совпадают с порогами ±1.5/±2.0
+# [ПРЕДЫДУЩЕЕ, 12.09.2026] Фиксированные полосы R3′ [РЕШЕНИЕ VIKTOR 28.08.2026].
+# Заменены t-квантилями (патч Этап 1, дефект C) — при ОЦЕНЁННОЙ sigma
+# распределение t(W-2), фиксированные 2.0/1.5 дают хвост шире заявленного.
+# НЕ УДАЛЕНЫ (принцип: устаревшие параметры помечаются, не удаляются молча).
+# В расчёте НЕ УЧАСТВУЮТ — управляющие пороги даёт band_thresholds().
 SIGNAL_THRESHOLD = 1.5
 CRITICAL_THRESHOLD = 2.0
 
 SESSION = requests.Session()
 
 # ---------------------------------------------------------------------------
-# [ПАТЧ ЭТАП 1, 12.09.2026] t-КВАНТИЛИ ПОЛОС
+# [ПАТЧ ЭТАП 1, 12.09.2026] t-КВАНТИЛИ ПОЛОС (дефект C)
 # ---------------------------------------------------------------------------
-# Пороги 2.0/1.5 подразумевают хвосты 4.55%/13.36%. При ОЦЕНЁННОЙ sigma
-# распределение стьюдентизированного остатка — t(W-2), не нормальное.
-# Фиксированные 2.0/1.5 дают хвост ШИРЕ заявленного. Пороги берутся как
-# t-квантили для тех же вероятностей. При W->inf сходятся к 2.0/1.5.
+# Пороги для хвостов 4.55% (полоса C) и 13.36% (полоса S) — те же
+# вероятности, что подразумевались фиксированными 2.0/1.5.
 # Таблица вместо scipy: прод-окружение зависимостей не имеет.
 # Ключ = BASELINE_WINDOW, df = W-2.
 T_QUANTILES = {
@@ -392,6 +441,10 @@ def save_verdict_history(records):
 
 
 def append_verdict(records, *, timestamp_iso, skew_pct, z_detrended, z_classical, combined):
+    # [ПАТЧ ЭТАП 1] Обе ноги пишутся В ПОЛНОЙ ТОЧНОСТИ. Было: детренд полный,
+    # классика round(...,2) — асимметрия в аудит-логе. formula_version
+    # обязателен: после патча лог содержит смесь v1 и v2, без тега история
+    # непригодна для анализа и Этап 2 сравнивать не с чем.
     records.append({
         "date": timestamp_iso[:10],
         "snapshot_utc": timestamp_iso,
@@ -435,6 +488,7 @@ def compute_detrended_zscore(prior_history, current_skew, lookback_days=BASELINE
     baseline = prior_history[-lookback_days:]
     xs = list(range(lookback_days))  # 0..13, порядок по возрастанию даты
     ys = [pt["skew"] for pt in baseline]
+
     slope, intercept = linear_regression(xs, ys)
     residuals = [y - (slope * x + intercept) for x, y in zip(xs, ys)]
 
@@ -442,6 +496,7 @@ def compute_detrended_zscore(prior_history, current_skew, lookback_days=BASELINE
     # pstdev делил на n -> систематическое занижение sigma -> завышение |z|.
     ss_res = sum(r * r for r in residuals)
     residual_std = (ss_res / (lookback_days - 2)) ** 0.5
+
     predicted_current = slope * lookback_days + intercept  # экстраполяция на индекс 14
     residual_current = current_skew - predicted_current
 
@@ -452,9 +507,10 @@ def compute_detrended_zscore(prior_history, current_skew, lookback_days=BASELINE
     sxx = sum((i - mean_x) ** 2 for i in xs)
     leverage = 1.0 / lookback_days + (lookback_days - mean_x) ** 2 / sxx
     pred_factor = (1.0 + leverage) ** 0.5
+
     denom = residual_std * pred_factor
     z = residual_current / denom if denom != 0 else None
-  
+
     return {
         # [ПАТЧ ЭТАП 1] D: округление УБРАНО из управляющего значения.
         # round(z,2) шло в combined_classification, а классическая нога —
@@ -470,7 +526,7 @@ def compute_detrended_zscore(prior_history, current_skew, lookback_days=BASELINE
         "baseline_start": baseline[0].get("date"),
         "baseline_end": baseline[-1].get("date"),
         "includes_current": False,
-        "method": "linear_detrend",        
+        "method": "linear_detrend",
         "residual_std_divisor": "n-2",
         "pred_factor": round(pred_factor, 4),
         "formula_version": "v2-corrected-2026-09-12",
@@ -481,7 +537,11 @@ def rolling_zscore_legacy(history_values, current):
     """[ПРЕДЫДУЩЕЕ, 16.08.2026] Z-score по ВСЕЙ истории от статичного
     среднего. Заменён детрендингом (compute_detrended_zscore) как основной
     критерий классификации — монотонный дрейф накапливал z сам на себя.
-    Оставлен для сравнения/истории решения, не управляет classification."""
+    Оставлен для сравнения/истории решения, не управляет classification.
+
+    [ПАТЧ ЭТАП 1] НЕ ТРОГАЛСЯ: pstdev по всей истории сохранён как есть.
+    Ветка reference-only, не для алертинга; её df отличается от W-2,
+    поэтому и пороги к ней применяются старые фиксированные 2.0/1.5."""
     if len(history_values) < 5:
         return None
     mu = mean(history_values)
@@ -492,10 +552,18 @@ def rolling_zscore_legacy(history_values, current):
 
 
 def compute_classical_zscore(prior_history, current_skew, lookback_days=BASELINE_WINDOW):
-    """Классический z: (текущее - mean(baseline)) / pop_std(baseline) по тем же
-    14 точкам, что и детренд (exclude current). Канон §10.3, вторая нога
-    двойного чтения [РЕШЕНИЕ VIKTOR 23.08.2026]. Тождественен методу
-    skew_crosscheck.compute_skew_zscore, чтобы источники не расходились.
+    """Классический z: (текущее - mean(baseline)) / ВЫБОРОЧНЫЙ std(baseline)
+    по тем же 14 точкам, что и детренд (exclude current). Канон §10.3,
+    вторая нога двойного чтения [РЕШЕНИЕ VIKTOR 23.08.2026].
+
+    [ПАТЧ ЭТАП 1] A: делитель n-1 (stdev), было n (pstdev).
+
+    🔴 РАСХОЖДЕНИЕ, ОТКРЫТО НА 12.09.2026: skew_crosscheck.compute_skew_zscore
+    по-прежнему использует pstdev (делитель n). До приведения его в
+    соответствие две ноги одной методологии считают РАЗНЫМИ формулами,
+    отношение sqrt(14/13) = 1.0377. Прежний докстринг утверждал
+    тождественность — с момента этого патча и до правки crosscheck
+    утверждение НЕВЕРНО.
 
     Слепая зона классического: медленный монотонный дрейф (уровень уходит
     маленькими шагами, каждый \"нормальный\") — его ловит детренд. Слепая зона
@@ -504,7 +572,7 @@ def compute_classical_zscore(prior_history, current_skew, lookback_days=BASELINE
     """
     if len(prior_history) < lookback_days:
         return None
-        baseline = [pt["skew"] for pt in prior_history[-lookback_days:]]
+    baseline = [pt["skew"] for pt in prior_history[-lookback_days:]]
     mu = mean(baseline)
     # [ПАТЧ ЭТАП 1] A: выборочный std требует делителя n-1, было n.
     sigma = stdev(baseline)
@@ -531,16 +599,19 @@ def combined_classification(z_detr, z_class):
     НЕ усредняет — маркирует. ВРЕМЕННОЕ правило, точка пересмотра: 3-е
     стресс-событие ИЛИ 30.09.2026, что позже.
 
-    Полосы на ногу: N |z|<1.5 · S 1.5≤|z|<2.0 · C |z|≥2.0.
+    Полосы на ногу: N |z|<thr_S · S thr_S≤|z|<thr_C · C |z|≥thr_C.
+    [ПАТЧ ЭТАП 1] Пороги берутся из band_thresholds() (t-квантили),
+    прежние фиксированные 1.5/2.0 помечены [ПРЕДЫДУЩЕЕ]. Логика ниже
+    НЕ МЕНЯЛАСЬ — изменились только границы полос.
 
-    1) Обе ноги вне N (обе ≥1.5) И знаки различаются → DIVERGENT, escalate.
+    1) Обе ноги вне N И знаки различаются → DIVERGENT, escalate.
        [документированная инверсия] — соответствует правилу Judge при
        directional conflict: не сглаживать, требовать ручного решения Viktor.
     2) Пара полос (N, C) в любом порядке → DIVERGENT, escalate.
        [разрыв в две полосы] — одна нога критична, вторая в норме.
     3) Иначе → вердикт по ноге с бо́льшим |z|, её знак, escalate=False.
-       Исключение: CRITICAL требует ОБЕ ноги ≥2.0 (сохранение акта 23.08).
-       Пара (C, S) → SIGNAL по знаку старшей ноги.
+       Исключение: CRITICAL требует ОБЕ ноги в полосе C (сохранение акта
+       23.08). Пара (C, S) → SIGNAL по знаку старшей ноги.
 
     [ДЕФЕКТ, ЗАРЕГИСТРИРОВАН 29.08.2026, НЕ ИСПРАВЛЕН — см. §12 реестр]:
     при z_detr is None (< BASELINE_WINDOW точек истории) da подставляется
@@ -560,13 +631,13 @@ def combined_classification(z_detr, z_class):
     both_present = z_detr is not None and z_class is not None
     signs_differ = both_present and (z_detr > 0) != (z_class > 0)
 
-    # R3′ п.1 — обе ноги ≥1.5σ и знаки противоположны: документированная инверсия
+    # R3′ п.1 — обе ноги вне N и знаки противоположны: документированная инверсия
     if band_d != "N" and band_c != "N" and signs_differ:
         return {
             "verdict": "DIVERGENT",
             "agreement": "DISAGREE",
             "escalate": True,
-            "note": ("R3′ п.1: обе ноги ≥1.5σ, знаки противоположны — "
+            "note": ("R3′ п.1: обе ноги вне полосы N, знаки противоположны — "
                      "документированная инверсия, авто-вердикта нет, "
                      "ручное решение Viktor (§10.3 двойное чтение)."),
         }
@@ -577,8 +648,8 @@ def combined_classification(z_detr, z_class):
             "verdict": "DIVERGENT",
             "agreement": "DISAGREE",
             "escalate": True,
-            "note": ("R3′ п.2: разрыв в две полосы (N,C) — одна нога ≥2.0σ, "
-                     "другая <1.5σ; авто-вердикта нет, ручное решение "
+            "note": ("R3′ п.2: разрыв в две полосы (N,C) — одна нога в полосе C, "
+                     "другая в N; авто-вердикта нет, ручное решение "
                      "Viktor (§10.3 двойное чтение)."),
         }
 
@@ -594,20 +665,20 @@ def combined_classification(z_detr, z_class):
             "verdict": "NORMAL",
             "agreement": "AGREE",
             "escalate": False,
-            "note": "R3′ п.3: обе ноги <1.5σ.",
+            "note": "R3′ п.3: обе ноги в полосе N.",
         }
 
     side = "PUT_PREMIUM" if (senior_z is not None and senior_z > 0) else "CALL_PREMIUM"
 
-    # CRITICAL требует ОБЕ ноги ≥2.0 (сохранение акта 23.08). К этому месту
-    # обе ноги ≥2.0 означает согласие знаков — противоположные знаки при
-    # обеих ≥1.5 уже отсеяны п.1.
+    # CRITICAL требует ОБЕ ноги в полосе C (сохранение акта 23.08). К этому
+    # месту обе ноги в C означает согласие знаков — противоположные знаки при
+    # обеих вне N уже отсеяны п.1.
     if band_d == "C" and band_c == "C":
         return {
             "verdict": f"CRITICAL_{side}",
             "agreement": "AGREE",
             "escalate": False,
-            "note": (f"R3′ п.3: обе ноги ≥2.0σ, знак согласован — "
+            "note": (f"R3′ п.3: обе ноги в полосе C, знак согласован — "
                      f"CRITICAL по старшей ноге ({senior_leg})."),
         }
 
@@ -618,7 +689,7 @@ def combined_classification(z_detr, z_class):
         "escalate": False,
         "note": (f"R3′ п.3: вердикт по старшей ноге ({senior_leg}, "
                  f"|z|={round(senior_mag, 2)}); CRITICAL не выдан — "
-                 f"вторая нога <2.0σ."),
+                 f"вторая нога не в полосе C."),
     }
 
 
@@ -657,7 +728,7 @@ def main():
     today = now_iso[:10]
 
     history = load_history()
-    # [ПАТЧ ЭТАП 1, З6] При ПОВТОРНОМ прогоне в сутки файл уже содержит
+    # [ПАТЧ ЭТАП 1] E: при ПОВТОРНОМ прогоне в сутки файл уже содержит
     # сегодняшнюю точку от раннего прогона. append_today() чистит дубль
     # ПОСЛЕ расчёта, поэтому baseline включал бы собственную утреннюю
     # запись, а includes_current:False лгало бы. Чистим ДО расчёта.
@@ -671,6 +742,7 @@ def main():
 
     z_legacy = rolling_zscore_legacy(prior_values, skew)
     z_classical = compute_classical_zscore(prior_history, skew)
+
     history = append_today(history, skew, now_iso)
     save_history(history)
 
@@ -689,7 +761,7 @@ def main():
         timestamp_iso=now_iso,
         skew_pct=round(skew, 3),
         z_detrended=z,
-        z_classical=round(z_classical, 2) if z_classical is not None else None,
+        z_classical=z_classical,
         combined=combined,
     )
     save_verdict_history(verdict_history)
