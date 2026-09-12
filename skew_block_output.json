@@ -1,25 +1,25 @@
 {
   "asset": "BTC",
-  "generated_at_utc": "2026-09-11T07:15:39Z",
-  "skew_pct": 1.53,
-  "zscore": 4.24,
+  "generated_at_utc": "2026-09-12T07:15:41Z",
+  "skew_pct": 1.11,
+  "zscore": 2.06,
   "classification": "CRITICAL_PUT_PREMIUM",
   "trend": {
-    "zscore": 4.24,
-    "trend_slope": -0.2584,
-    "trend_intercept": 1.4906,
-    "predicted_value": -2.128,
-    "residual": 3.658,
-    "residual_std": 0.8619,
+    "zscore": 2.06,
+    "trend_slope": -0.1622,
+    "trend_intercept": 0.8857,
+    "predicted_value": -1.385,
+    "residual": 2.495,
+    "residual_std": 1.2106,
     "baseline_window": 14,
-    "baseline_start": "2026-08-28",
-    "baseline_end": "2026-09-10",
+    "baseline_start": "2026-08-29",
+    "baseline_end": "2026-09-11",
     "includes_current": false,
     "method": "linear_detrend"
   },
-  "zscore_legacy_full_history": -0.22,
+  "zscore_legacy_full_history": -0.37,
   "classification_legacy": "NORMAL",
-  "zscore_classical": 1.27,
+  "zscore_classical": 0.93,
   "classification_classical": "NORMAL",
   "classification_combined": {
     "verdict": "DIVERGENT",
@@ -27,15 +27,15 @@
     "escalate": true,
     "note": "R3′ п.2: разрыв в две полосы (N,C) — одна нога ≥2.0σ, другая <1.5σ; авто-вердикта нет, ручное решение Viktor (§10.3 двойное чтение)."
   },
-  "history_points": 45,
+  "history_points": 46,
   "meta": {
     "expiry_ts": 1790928000000,
     "call_instrument": "BTC-2OCT26-82000-C",
-    "call_iv": 37.37,
-    "call_delta": 0.27719,
+    "call_iv": 34.77,
+    "call_delta": 0.25617,
     "put_instrument": "BTC-2OCT26-73000-P",
-    "put_iv": 38.9,
-    "put_delta": -0.24799,
-    "underlying_price": 77297.23
+    "put_iv": 35.88,
+    "put_delta": -0.22639,
+    "underlying_price": 77325.27
   }
 }
