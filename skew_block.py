@@ -624,16 +624,21 @@ def combined_classification(z_detr, z_class):
     }
 
 
-def classify_skew(z):
+def classify_skew(z, thresholds=None):
+    """[ПАТЧ ЭТАП 1] C: пороги параметром.
+    thresholds=None -> t-квантили текущего окна (управляющие поля).
+    thresholds=(2.0, 1.5) -> legacy-ветка: full-history z имеет ДРУГОЙ df,
+    t-квантиль окна к нему неприменим. Legacy помечен reference-only."""
     if z is None:
         return "INSUFFICIENT_HISTORY"
-    if z >= 2.0:
+    thr_c, thr_s = thresholds if thresholds else band_thresholds(BASELINE_WINDOW)
+    if z >= thr_c:
         return "CRITICAL_PUT_PREMIUM"  # институциональный tail-hedge, рынок закладывает падение
-    if z >= 1.5:
+    if z >= thr_s:
         return "SIGNAL_PUT_PREMIUM"
-    if z <= -2.0:
+    if z <= -thr_c:
         return "CRITICAL_CALL_PREMIUM"
-    if z <= -1.5:
+    if z <= -thr_s:
         return "SIGNAL_CALL_PREMIUM"
     return "NORMAL"
 
