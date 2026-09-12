@@ -472,7 +472,10 @@ def compute_detrended_zscore(prior_history, current_skew, lookback_days=BASELINE
         "baseline_start": baseline[0].get("date"),
         "baseline_end": baseline[-1].get("date"),
         "includes_current": False,
-        "method": "linear_detrend",
+        "method": "linear_detrend",        
+        "residual_std_divisor": "n-2",
+        "pred_factor": round(pred_factor, 4),
+        "formula_version": "v2-corrected-2026-09-12",
     }
 
 
