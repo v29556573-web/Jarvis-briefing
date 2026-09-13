@@ -1,41 +1,47 @@
 {
   "asset": "BTC",
-  "generated_at_utc": "2026-09-12T07:15:41Z",
-  "skew_pct": 1.11,
-  "zscore": 2.06,
-  "classification": "CRITICAL_PUT_PREMIUM",
+  "generated_at_utc": "2026-09-13T07:15:38Z",
+  "skew_pct": 1.0,
+  "zscore": 1.0316686370828005,
+  "classification": "NORMAL",
   "trend": {
-    "zscore": 2.06,
-    "trend_slope": -0.1622,
-    "trend_intercept": 0.8857,
-    "predicted_value": -1.385,
-    "residual": 2.495,
-    "residual_std": 1.2106,
+    "zscore": 1.0316686370828005,
+    "zscore_rounded": 1.03,
+    "trend_slope": -0.044,
+    "trend_intercept": 0.0314,
+    "predicted_value": -0.584,
+    "residual": 1.584,
+    "residual_std": 1.337,
     "baseline_window": 14,
-    "baseline_start": "2026-08-29",
-    "baseline_end": "2026-09-11",
+    "baseline_start": "2026-08-30",
+    "baseline_end": "2026-09-12",
     "includes_current": false,
-    "method": "linear_detrend"
+    "method": "linear_detrend",
+    "residual_std_divisor": "n-2",
+    "pred_factor": 1.1483,
+    "formula_version": "v2-corrected-2026-09-12"
   },
-  "zscore_legacy_full_history": -0.37,
+  "zscore_legacy_full_history": -0.4,
   "classification_legacy": "NORMAL",
-  "zscore_classical": 0.93,
+  "zscore_classical": 0.97,
   "classification_classical": "NORMAL",
   "classification_combined": {
-    "verdict": "DIVERGENT",
-    "agreement": "DISAGREE",
-    "escalate": true,
-    "note": "R3′ п.2: разрыв в две полосы (N,C) — одна нога ≥2.0σ, другая <1.5σ; авто-вердикта нет, ручное решение Viktor (§10.3 двойное чтение)."
+    "verdict": "NORMAL",
+    "agreement": "AGREE",
+    "escalate": false,
+    "note": "R3′ п.3: обе ноги в полосе N."
   },
-  "history_points": 46,
+  "history_points": 47,
   "meta": {
     "expiry_ts": 1790928000000,
     "call_instrument": "BTC-2OCT26-82000-C",
-    "call_iv": 34.77,
-    "call_delta": 0.25617,
+    "call_iv": 36.04,
+    "call_delta": 0.25004,
     "put_instrument": "BTC-2OCT26-73000-P",
-    "put_iv": 35.88,
-    "put_delta": -0.22639,
-    "underlying_price": 77325.27
-  }
+    "put_iv": 37.04,
+    "put_delta": -0.23557,
+    "underlying_price": 77151.73
+  },
+  "rerun_same_day": false,
+  "formula_version": "v2-corrected-2026-09-12"
 }

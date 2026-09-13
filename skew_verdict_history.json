@@ -178,5 +178,22 @@
     "escalate": true,
     "note": "R3′ п.2: разрыв в две полосы (N,C) — одна нога ≥2.0σ, другая <1.5σ; авто-вердикта нет, ручное решение Viktor (§10.3 двойное чтение).",
     "rule": "R3prime-2026-08-28"
+  },
+  {
+    "date": "2026-09-13",
+    "snapshot_utc": "2026-09-13T07:15:38Z",
+    "skew_pct": 1.0,
+    "z_detrended": 1.0316686370828005,
+    "z_classical": 0.9665846327474275,
+    "verdict": "NORMAL",
+    "agreement": "AGREE",
+    "escalate": false,
+    "note": "R3′ п.3: обе ноги в полосе N.",
+    "rule": "R3prime-2026-08-28",
+    "formula_version": "v2-corrected-2026-09-12",
+    "thresholds": [
+      2.231351,
+      1.608964
+    ]
   }
 ]
