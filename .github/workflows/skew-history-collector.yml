@@ -6,6 +6,11 @@ permissions:
 # на бесплатном tier оно плавало в диапазоне 06:23→18:50 UTC,
 # из-за чего точки ряда снимались в разное время суток и baseline
 # смешивал внутридневную вариацию с межсуточной.
+#
+# ⛔ ВРЕМЯ СЪЁМА 07:15 UTC — КОНСТАНТА РЯДА. Не сдвигать ради
+# согласования с другими задачами: сдвиг создаёт структурный разрыв
+# в baseline и воспроизводит дефект, закрытый 29.08.2026.
+# Конфликты расписания решаются сдвигом ПОТРЕБИТЕЛЯ, не коллектора.
 on:
   workflow_dispatch: {}
 jobs:
@@ -20,15 +25,41 @@ jobs:
           python-version: "3.12"
       - name: Install dependencies
         run: pip install requests
+
+      # ПЕРВИЧНЫЙ СБОР. Падение здесь = дня нет, это корректно:
+      # коммитить нечего.
       - name: Collect BTC skew data point
         run: python skew_block.py
+
+      # [ПРАВКА 13.09.2026] continue-on-error: сбор данных НЕ ДОЛЖЕН
+      # зависеть от успеха аналитики, которая на них считается.
+      # Было: падение кросс-чека останавливало job -> шаг Commit
+      # не выполнялся -> сегодняшняя точка skew ТЕРЯЛАСЬ НАВСЕГДА
+      # вместе с контейнером. Дыра в ряду искажает z на 14 дней вперёд.
       - name: Run skew cross-check
-        run: python3 skew_crosscheck.py
+        id: crosscheck
+        continue-on-error: true
+        run: python skew_crosscheck.py
+
+      # [ПРАВКА 13.09.2026] if: always() — коммитим точку даже если
+      # кросс-чек упал. git add терпит отсутствующие файлы.
       - name: Commit skew history
+        if: always()
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-          git add skew_history.json skew_crosscheck_output.json skew_intraday.json skew_block_output.json skew_verdict_history.json
+          git add -A -- skew_history.json skew_crosscheck_output.json \
+                        skew_intraday.json skew_block_output.json \
+                        skew_verdict_history.json
           git diff --staged --quiet || git commit -m "Daily skew history point"
           git pull --rebase origin main
           git push
+
+      # [ПРАВКА 13.09.2026] Падение кросс-чека больше не валит job,
+      # поэтому оно обязано быть ВИДИМЫМ — иначе молчаливый сбой.
+      - name: Fail if cross-check failed
+        if: steps.crosscheck.outcome == 'failure'
+        run: |
+          echo "::error::skew_crosscheck.py упал. Точка skew сохранена,"
+          echo "::error::кросс-чек НЕ выполнен — §10.3 третья нога отсутствует."
+          exit 1
