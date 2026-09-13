@@ -121,6 +121,55 @@ R3′ внесён в код, поле "rule" перестаёт врать.
   - контаминированные точки 28.08 и 29.08 внутри рабочей базы
   - первые 19 точек ряда без поля value_type
 
+=====================================================================
+[СБОР VRP, 12.09.2026 — ЗАЧЕМ СУЩЕСТВУЕТ vol_history.json]
+=====================================================================
+>>> ЭТОТ БЛОК НИЧЕГО НЕ РЕШАЕТ И НИ НА ЧТО НЕ ВЛИЯЕТ. <<<
+Он только КОПИТ данные. Ни одна рутина, ни один вердикт, ни одно
+торговое решение его не читают. Если однажды окажется, что кто-то
+завёл на него логику — это ДЕФЕКТ, а не задумка.
+
+ПОЧЕМУ ЗАВЕДЁН (исследование VRP, 08.09.2026):
+  Проверялась гипотеза "премия IV-RV на BTC систематически положительна".
+  Результат [MEASURED, n=170, 19.03-04.09.2026]: ПОДТВЕРЖДЕНА.
+    медиана премии +4.99 п.п. · доля положительных дней 84.12%
+    три механических окна (трети выборки), включая окно с ценой -23.19%
+    все три пререгистрированных критерия §13.8 пройдены
+    худшая просадка -39.60 vol-pts за 10 дней = 7.1 дня типичной прибыли
+
+  НО посчитать настоящую симуляцию продажи волатильности НЕ УДАЛОСЬ.
+  Причина ровно одна: у нас не было УРОВНЕЙ implied vol.
+    skew_history.json копит РАЗНОСТЬ put_iv - call_iv, не уровни.
+    skew_block_output.json перезаписывается каждый прогон.
+    DVOL (Deribit) — индекс, а не котировка инструмента.
+  Пришлось считать линейное приближение IV-RV вместо P&L со страйками.
+  Приближение ОПТИМИСТИЧНО по построению: у проданного стрэддла убыток
+  растёт с КВАДРАТОМ движения (гамма), линейная мера этого не видит.
+
+ЧТО ЭТОТ СБОР ДАСТ ЧЕРЕЗ 6-12 МЕСЯЦЕВ:
+  Возможность прогнать симуляцию на РЕАЛЬНЫХ страйках и тенорах —
+  с гаммой, вегой и издержками, а не на приближении. То есть ответить
+  на вопрос, на который 08.09.2026 ответить было нечем: сколько ДЕНЕГ,
+  а не сколько vol-points.
+
+ЦЕНА (проверено до внедрения, вопрос Viktor о нагрузке на GitHub):
+  новых API-запросов к Deribit для 25d/ATM:  0
+      — тикеры всех страйков в ±25% УЖЕ перебираются в find_25delta_skew,
+        уровни IV уже лежат в meta, ATM уже в памяти. Раньше выбрасывались.
+  новых запросов:  +1 (DVOL, отдельный эндпоинт)
+  новых workflow:  0      новых cron-заданий:  0
+  прирост времени прогона:  ~0.3 сек (один HTTP-запрос)
+  размер файла:  ~300 байт/день -> ~110 КБ/год
+      — для сравнения: skew_history.json на 12.09.2026 ~4.5 КБ
+
+ЕСЛИ VRP БУДЕТ ЗАБРАКОВАН — файл всё равно не вредит: 110 КБ/год и
+ноль влияния на логику. Удаление сбора тогда — отдельный акт Viktor,
+молча не вносить.
+
+СТАТУС VRP на 12.09.2026: премия ДОКАЗАНА, стратегия НЕ ДОКАЗАНА,
+допуск к исполнению НЕ ДАН. Хвост охарактеризован на ОДНОМ случае
+(n=1 для просадки) — для допуска этого мало.
+
 Зависимости: requests
 """
 
@@ -138,9 +187,14 @@ HISTORY_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "skew_hi
 INTRADAY_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "skew_intraday.json")
 BLOCK_OUTPUT_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "skew_block_output.json")
 VERDICT_HISTORY_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "skew_verdict_history.json")
+# [СБОР VRP] Накопительный файл УРОВНЕЙ IV. Потребителей НЕТ — см. докстринг.
+VOL_HISTORY_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "vol_history.json")
 HISTORY_MAX_DAYS = 90
 INTRADAY_MAX_DAYS = 7
 VERDICT_HISTORY_MAX_RECORDS = 500  # append-only; несколько записей в сутки — норма, не дедуплицируем по дате
+# [СБОР VRP] ~3 года. VRP-симуляция требует длинного ряда с разными режимами,
+# обрезать раньше бессмысленно. При ~300 байт/день это ~330 КБ на горизонте.
+VOL_HISTORY_MAX_DAYS = 1100
 BASELINE_WINDOW = 14  # канон [РЕШЕНИЕ VIKTOR 15.08.2026], единый для skew_crosscheck.py и skew_block.py
 TARGET_DELTA = 0.25
 TARGET_TENOR_DAYS = 30  # ищем экспирацию ближе всего к 30 дням вперёд
@@ -281,10 +335,50 @@ def get_ticker(instrument_name):
     return result, None
 
 
+# ---------------------------------------------------------------------------
+# [СБОР VRP, 12.09.2026] DVOL — индекс волатильности Deribit
+# ---------------------------------------------------------------------------
+
+def get_dvol(currency="BTC"):
+    """Последнее закрытие DVOL. ЕДИНСТВЕННЫЙ дополнительный сетевой запрос,
+    добавленный сбором VRP (~0.3 сек).
+
+    Свеча: [timestamp, open, high, low, close]. Берём close последней.
+    Окно в 2 суток назад — гарантия, что свеча есть даже при сдвиге прогона.
+
+    Мягкий отказ: при любой ошибке возвращает None. DVOL — накопительное
+    поле, не управляющее; ронять из-за него боевой прогон НЕЛЬЗЯ.
+    """
+    try:
+        now_ms = int(time.time() * 1000)
+        result, err = safe_get(
+            f"{DERIBIT_BASE}/public/get_volatility_index_data",
+            {
+                "currency": currency,
+                "start_timestamp": now_ms - 2 * 86400 * 1000,
+                "end_timestamp": now_ms,
+                "resolution": 86400,
+            },
+        )
+        if err or not result:
+            return None
+        data = result.get("data") or []
+        if not data:
+            return None
+        return data[-1][4]  # close последней свечи
+    except Exception:
+        return None
+
+
 def find_25delta_skew(currency="BTC"):
     """
     Возвращает (skew_pct, meta) или (None, error_str).
     meta содержит expiry, call/put strikes и их IV/delta — для прозрачности.
+
+    [СБОР VRP, 12.09.2026] В те же циклы добавлен поиск ATM-страйка
+    (ближайший к споте). Дополнительных сетевых запросов НЕТ: тикеры
+    всех страйков в ±25% уже перебираются, ATM просто перестал
+    выбрасываться. Поля atm_* уходят в meta и далее в vol_history.json.
     """
     instruments, err = get_btc_option_instruments()
     if err:
@@ -313,6 +407,7 @@ def find_25delta_skew(currency="BTC"):
     puts = [p for p in puts if lo <= p["strike"] <= hi]
 
     best_call, best_call_diff = None, None
+    atm_call, atm_call_diff = None, None  # [СБОР VRP]
     for c in calls:
         ticker, terr = get_ticker(c["instrument_name"])
         time.sleep(0.05)
@@ -324,9 +419,15 @@ def find_25delta_skew(currency="BTC"):
         diff = abs(delta - TARGET_DELTA)
         if best_call_diff is None or diff < best_call_diff:
             best_call_diff = diff
-            best_call = (c["instrument_name"], ticker["mark_iv"], delta)
+            best_call = (c["instrument_name"], ticker["mark_iv"], delta, c["strike"])
+        # [СБОР VRP] ATM-колл: минимум |strike - spot| среди тех же тикеров
+        sdiff = abs(c["strike"] - underlying_price)
+        if atm_call_diff is None or sdiff < atm_call_diff:
+            atm_call_diff = sdiff
+            atm_call = (c["strike"], ticker["mark_iv"], delta)
 
     best_put, best_put_diff = None, None
+    atm_put, atm_put_diff = None, None  # [СБОР VRP]
     for p in puts:
         ticker, terr = get_ticker(p["instrument_name"])
         time.sleep(0.05)
@@ -338,13 +439,18 @@ def find_25delta_skew(currency="BTC"):
         diff = abs(delta - (-TARGET_DELTA))
         if best_put_diff is None or diff < best_put_diff:
             best_put_diff = diff
-            best_put = (p["instrument_name"], ticker["mark_iv"], delta)
+            best_put = (p["instrument_name"], ticker["mark_iv"], delta, p["strike"])
+        # [СБОР VRP] ATM-пут
+        sdiff = abs(p["strike"] - underlying_price)
+        if atm_put_diff is None or sdiff < atm_put_diff:
+            atm_put_diff = sdiff
+            atm_put = (p["strike"], ticker["mark_iv"], delta)
 
     if not best_call or not best_put:
         return None, "could not find ~25-delta call/put (greeks unavailable)"
 
-    call_name, call_iv, call_delta = best_call
-    put_name, put_iv, put_delta = best_put
+    call_name, call_iv, call_delta, call_strike = best_call
+    put_name, put_iv, put_delta, put_strike = best_put
     skew = put_iv - call_iv  # положительный skew = путы дороже (страх падения)
 
     meta = {
@@ -356,6 +462,14 @@ def find_25delta_skew(currency="BTC"):
         "put_iv": put_iv,
         "put_delta": put_delta,
         "underlying_price": underlying_price,
+        # [СБОР VRP] страйки 25d — нужны для восстановления позиции в симуляции
+        "call_strike": call_strike,
+        "put_strike": put_strike,
+        # [СБОР VRP] ATM — УРОВЕНЬ волатильности, а не разность
+        "atm_call_strike": atm_call[0] if atm_call else None,
+        "atm_call_iv": atm_call[1] if atm_call else None,
+        "atm_put_strike": atm_put[0] if atm_put else None,
+        "atm_put_iv": atm_put[1] if atm_put else None,
     }
     return skew, meta
 
@@ -416,6 +530,71 @@ def append_intraday_snapshot(snapshots, skew_value, timestamp_iso):
         "value_type": "intraday",
     })
     return snapshots
+
+
+# ---------------------------------------------------------------------------
+# [СБОР VRP, 12.09.2026] vol_history.json — УРОВНИ IV, НЕ РАЗНОСТЬ
+# ---------------------------------------------------------------------------
+# Потребителей нет. Только накопление. Подробное "зачем" — в докстринге модуля.
+# Конвенция last-write-wins на дату, как у skew_history.json: аудит разброса
+# времени съёма уже обеспечен skew_verdict_history.json, дублировать незачем.
+
+def load_vol_history():
+    if not os.path.exists(VOL_HISTORY_FILE):
+        return []
+    try:
+        with open(VOL_HISTORY_FILE, "r") as f:
+            return json.load(f)
+    except Exception:
+        return []
+
+
+def save_vol_history(records):
+    with open(VOL_HISTORY_FILE, "w") as f:
+        json.dump(records[-VOL_HISTORY_MAX_DAYS:], f, indent=2, ensure_ascii=False)
+
+
+def append_vol_snapshot(records, *, timestamp_iso, meta, dvol, skew_value):
+    """Одна запись в сутки, last-write-wins.
+
+    dte считается от момента съёма до экспирации — ВАЖНО для симуляции:
+    тенор плавает (берётся ближайшая к 30 дням экспирация, точного
+    30-дневного контракта на рынке обычно нет), и без записанного dte
+    восстановить позицию задним числом невозможно.
+    """
+    today = timestamp_iso[:10]
+    records = [r for r in records if r.get("date") != today]
+
+    expiry_ts = meta.get("expiry_ts")
+    dte = None
+    if expiry_ts:
+        dte = round((expiry_ts / 1000 - time.time()) / 86400.0, 3)
+
+    records.append({
+        "date": today,
+        "snapshot_utc": timestamp_iso,
+        "underlying": meta.get("underlying_price"),
+        "expiry_ts": expiry_ts,
+        "dte": dte,
+        # уровни ATM — то, чего не хватило для симуляции VRP 08.09.2026
+        "atm_call_strike": meta.get("atm_call_strike"),
+        "atm_call_iv": meta.get("atm_call_iv"),
+        "atm_put_strike": meta.get("atm_put_strike"),
+        "atm_put_iv": meta.get("atm_put_iv"),
+        # уровни 25-дельта (в skew_history.json хранится только их РАЗНОСТЬ)
+        "c25_strike": meta.get("call_strike"),
+        "c25_iv": meta.get("call_iv"),
+        "c25_delta": meta.get("call_delta"),
+        "p25_strike": meta.get("put_strike"),
+        "p25_iv": meta.get("put_iv"),
+        "p25_delta": meta.get("put_delta"),
+        # дублирует разность из skew_history.json НАМЕРЕННО — файл должен
+        # быть самодостаточен при анализе, без склейки с другими файлами
+        "skew_25d": skew_value,
+        "dvol": dvol,
+        "collector_version": "vrp-collect-2026-09-12",
+    })
+    return records
 
 
 # ---------------------------------------------------------------------------
@@ -750,6 +929,24 @@ def main():
     intraday = append_intraday_snapshot(intraday, skew, now_iso)
     save_intraday(intraday)
 
+    # [СБОР VRP, 12.09.2026] Накопление уровней IV. НЕ участвует ни в одном
+    # расчёте и ни в одном вердикте — только пишется на диск.
+    # try обязателен: сбой накопительного блока НЕ ДОЛЖЕН ронять боевой прогон.
+    vol_collect_error = None
+    try:
+        dvol = get_dvol("BTC")
+        vol_history = load_vol_history()
+        vol_history = append_vol_snapshot(
+            vol_history,
+            timestamp_iso=now_iso,
+            meta=meta,
+            dvol=dvol,
+            skew_value=skew,
+        )
+        save_vol_history(vol_history)
+    except Exception as e:
+        vol_collect_error = str(e)
+
     combined = combined_classification(z, z_classical)
 
     # [РЕШЕНИЕ VIKTOR 29.08.2026]: append-лог вердикта — ДО перезаписи
@@ -782,6 +979,8 @@ def main():
         "meta": meta,
         "rerun_same_day": rerun_today,
         "formula_version": "v2-corrected-2026-09-12",
+        # [СБОР VRP] диагностика накопительного блока. None = сбор прошёл.
+        "vol_collect_error": vol_collect_error,
     })
 
     # [РЕШЕНИЕ VIKTOR 16.08.2026]: результат коммитится в файл — Cloud-рутины
