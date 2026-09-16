@@ -229,5 +229,22 @@
       2.231351,
       1.608964
     ]
+  },
+  {
+    "date": "2026-09-16",
+    "snapshot_utc": "2026-09-16T07:15:33Z",
+    "skew_pct": 1.95,
+    "z_detrended": 0.6879795434145489,
+    "z_classical": 1.6439206219175215,
+    "verdict": "SIGNAL_PUT_PREMIUM",
+    "agreement": "AGREE",
+    "escalate": false,
+    "note": "R3′ п.3: вердикт по старшей ноге (classical, |z|=1.64); CRITICAL не выдан — вторая нога не в полосе C.",
+    "rule": "R3prime-2026-08-28",
+    "formula_version": "v2-corrected-2026-09-12",
+    "thresholds": [
+      2.231351,
+      1.608964
+    ]
   }
 ]
