@@ -1,9 +1,9 @@
 {
-  "timestamp_utc": "2026-09-16T07:15:33.361337+00:00",
-  "skew_latest": 1.9500000000000028,
-  "skew_trailing_mean_14d": -0.188,
-  "skew_trailing_std_14d": 1.3005,
-  "skew_zscore": 1.6439,
+  "timestamp_utc": "2026-09-17T07:15:47.512541+00:00",
+  "skew_latest": 2.1899999999999977,
+  "skew_trailing_mean_14d": -0.09,
+  "skew_trailing_std_14d": 1.4096,
+  "skew_zscore": 1.6174,
   "std_divisor": "n-1",
   "thresholds": {
     "critical": 2.231351,
@@ -15,17 +15,17 @@
     "source": "skew_block_output.json",
     "block_verdict": "SIGNAL_PUT_PREMIUM",
     "block_escalate": false,
-    "block_generated_at_utc": "2026-09-16T07:15:33Z",
+    "block_generated_at_utc": "2026-09-17T07:15:47Z",
     "block_age_hours": 0.0,
     "block_stale": false,
     "reason": "вердикт SIGNAL_PUT_PREMIUM — кросс-чек не требуется"
   },
   "baseline": {
     "window": 14,
-    "start": "2026-09-02",
-    "end": "2026-09-15",
+    "start": "2026-09-03",
+    "end": "2026-09-16",
     "includes_current": false,
-    "latest_date": "2026-09-16"
+    "latest_date": "2026-09-17"
   },
   "note": "Кросс-чек не запускался. Вердикт skew_block: SIGNAL_PUT_PREMIUM (escalate=False). Причина: вердикт SIGNAL_PUT_PREMIUM — кросс-чек не требуется. Ручной прогон: force_check=True."
 }
