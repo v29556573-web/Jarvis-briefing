@@ -1,31 +1,56 @@
 {
-  "timestamp_utc": "2026-09-18T07:15:40.175130+00:00",
-  "skew_latest": 1.0900000000000034,
-  "skew_trailing_mean_14d": 0.037,
-  "skew_trailing_std_14d": 1.5331,
-  "skew_zscore": 0.6868,
+  "timestamp_utc": "2026-09-19T07:15:40.748319+00:00",
+  "skew_latest": -0.14999999999999858,
+  "skew_trailing_mean_14d": 0.246,
+  "skew_trailing_std_14d": 1.4551,
+  "skew_zscore": -0.2724,
   "std_divisor": "n-1",
   "thresholds": {
     "critical": 2.231351,
     "signal": 1.608964
   },
   "formula_version": "v2-corrected-2026-09-13",
-  "critical_breach": false,
+  "critical_breach": true,
   "gate": {
     "source": "skew_block_output.json",
-    "block_verdict": "SIGNAL_CALL_PREMIUM",
-    "block_escalate": false,
-    "block_generated_at_utc": "2026-09-18T07:15:39Z",
+    "block_verdict": "DIVERGENT",
+    "block_escalate": true,
+    "block_generated_at_utc": "2026-09-19T07:15:40Z",
     "block_age_hours": 0.0,
     "block_stale": false,
-    "reason": "вердикт SIGNAL_CALL_PREMIUM — кросс-чек не требуется"
+    "reason": "escalate=True, вердикт DIVERGENT"
   },
   "baseline": {
     "window": 14,
-    "start": "2026-09-04",
-    "end": "2026-09-17",
+    "start": "2026-09-05",
+    "end": "2026-09-18",
     "includes_current": false,
-    "latest_date": "2026-09-18"
+    "latest_date": "2026-09-19"
   },
-  "note": "Кросс-чек не запускался. Вердикт skew_block: SIGNAL_CALL_PREMIUM (escalate=False). Причина: вердикт SIGNAL_CALL_PREMIUM — кросс-чек не требуется. Ручной прогон: force_check=True."
+  "crosscheck": {
+    "funding_rate_pct_8h": "ДАННЫЕ НЕ ПОЛУЧЕНЫ",
+    "ls_ratio_latest": "ДАННЫЕ НЕ ПОЛУЧЕНЫ",
+    "ls_ratio_stable": "ДАННЫЕ НЕ ПОЛУЧЕНЫ",
+    "basis_pct": "ДАННЫЕ НЕ ПОЛУЧЕНЫ",
+    "signals": [
+      {
+        "metric": "funding",
+        "verdict": "ДАННЫЕ НЕ ПОЛУЧЕНЫ",
+        "detail": "ДАННЫЕ НЕ ПОЛУЧЕНЫ"
+      },
+      {
+        "metric": "ls_ratio",
+        "verdict": "ДАННЫЕ НЕ ПОЛУЧЕНЫ",
+        "detail": "ДАННЫЕ НЕ ПОЛУЧЕНЫ"
+      },
+      {
+        "metric": "basis",
+        "verdict": "ДАННЫЕ НЕ ПОЛУЧЕНЫ",
+        "detail": "ДАННЫЕ НЕ ПОЛУЧЕНЫ"
+      }
+    ],
+    "overall_verdict": "ДАННЫЕ НЕ ПОЛУЧЕНЫ",
+    "thresholds_uncalibrated": "⚠️ funding 0.01%/8ч КОНФЛИКТУЕТ с мёртвой зоной §10.2 (0.005%); basis 0.5% — нога вычеркнута из §10.5 по §12 №35 (отрицателен 99.00% дней); ls spread 0.05 за 25 мин. Все пороги кабинетные.",
+    "not_automated": "CME vs aggregate exchange OI divergence — Coinglass per-exchange breakdown is JS-rendered, requires manual check at coinglass.com/ru/open-interest/BTC"
+  }
 }

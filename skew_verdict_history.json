@@ -280,5 +280,22 @@
       2.231351,
       1.608964
     ]
+  },
+  {
+    "date": "2026-09-19",
+    "snapshot_utc": "2026-09-19T07:15:40Z",
+    "skew_pct": -0.15,
+    "z_detrended": -3.010575518477433,
+    "z_classical": -0.2724357601861041,
+    "verdict": "DIVERGENT",
+    "agreement": "DISAGREE",
+    "escalate": true,
+    "note": "R3′ п.2: разрыв в две полосы (N,C) — одна нога в полосе C, другая в N; авто-вердикта нет, ручное решение Viktor (§10.3 двойное чтение).",
+    "rule": "R3prime-2026-08-28",
+    "formula_version": "v2-corrected-2026-09-12",
+    "thresholds": [
+      2.231351,
+      1.608964
+    ]
   }
 ]

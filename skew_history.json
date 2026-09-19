@@ -278,5 +278,11 @@
     "skew": 1.0900000000000034,
     "value_type": "eod_close",
     "source_timestamp": "2026-09-18T07:15:39Z"
+  },
+  {
+    "date": "2026-09-19",
+    "skew": -0.14999999999999858,
+    "value_type": "eod_close",
+    "source_timestamp": "2026-09-19T07:15:40Z"
   }
 ]
