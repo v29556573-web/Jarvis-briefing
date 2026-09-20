@@ -297,5 +297,22 @@
       2.231351,
       1.608964
     ]
+  },
+  {
+    "date": "2026-09-20",
+    "snapshot_utc": "2026-09-20T07:15:49Z",
+    "skew_pct": 0.8,
+    "z_detrended": -1.1066571329706592,
+    "z_classical": 0.33489535596776737,
+    "verdict": "NORMAL",
+    "agreement": "AGREE",
+    "escalate": false,
+    "note": "R3′ п.3: обе ноги в полосе N.",
+    "rule": "R3prime-2026-08-28",
+    "formula_version": "v2-corrected-2026-09-12",
+    "thresholds": [
+      2.231351,
+      1.608964
+    ]
   }
 ]
