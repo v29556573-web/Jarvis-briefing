@@ -1,52 +1,52 @@
 {
-  "timestamp_utc": "2026-09-23T11:31:07.749207+00:00",
+  "timestamp_utc": "2026-09-24T11:41:21.232154+00:00",
   "lookback_days": 7,
   "chains": {
     "Base": {
       "stablecoin_mcap": {
-        "old_usd": 4967909024.0,
-        "new_usd": 5019592902.52,
-        "pct_change": 1.04
+        "old_usd": 4958285776.0,
+        "new_usd": 4971703068.35,
+        "pct_change": 0.27
       },
       "tvl": {
-        "old_usd": 5498034198,
-        "new_usd": 6259579503,
-        "pct_change": 13.85
+        "old_usd": 5546951715,
+        "new_usd": 6116065000,
+        "pct_change": 10.26
       },
       "dominance": {
         "shares_pct": {
-          "USDC": 85.84
+          "USDC": 85.78
         },
-        "grand_total_usd": 5002803362.65
+        "grand_total_usd": 4979558058.19
       },
       "dominance_shift_vs_prev_run_pp": {
-        "USDC": -0.05
+        "USDC": -0.06
       },
       "scenario": "NEUTRAL — нет чёткого сигнала по текущим порогам"
     },
     "Solana": {
       "stablecoin_mcap": {
-        "old_usd": 15897385929.0,
-        "new_usd": 16818482005.77,
-        "pct_change": 5.79
+        "old_usd": 15703846145.0,
+        "new_usd": 16365354347.58,
+        "pct_change": 4.21
       },
       "tvl": {
-        "old_usd": 5724674380,
-        "new_usd": 6511260140,
-        "pct_change": 13.74
+        "old_usd": 5782045073,
+        "new_usd": 6353769555,
+        "pct_change": 9.89
       },
       "dominance": {
         "shares_pct": {
-          "USDT": 13.15,
-          "USDC": 45.4
+          "USDT": 13.06,
+          "USDC": 45.76
         },
-        "grand_total_usd": 16242293169.51
+        "grand_total_usd": 16350694891.59
       },
       "dominance_shift_vs_prev_run_pp": {
-        "USDT": -0.12,
-        "USDC": 0.17
+        "USDT": -0.09,
+        "USDC": 0.36
       },
-      "scenario": "C — разгар хайпа, капитал сразу идёт в работу, осторожный вход"
+      "scenario": "NEUTRAL — нет чёткого сигнала по текущим порогам"
     }
   },
   "not_automated": {
