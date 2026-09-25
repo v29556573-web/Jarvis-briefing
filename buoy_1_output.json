@@ -1,52 +1,52 @@
 {
-  "timestamp_utc": "2026-09-24T11:41:21.232154+00:00",
+  "timestamp_utc": "2026-09-25T11:47:18.809827+00:00",
   "lookback_days": 7,
   "chains": {
     "Base": {
       "stablecoin_mcap": {
-        "old_usd": 4958285776.0,
-        "new_usd": 4971703068.35,
-        "pct_change": 0.27
+        "old_usd": 4970659114.0,
+        "new_usd": 4994633816.3,
+        "pct_change": 0.48
       },
       "tvl": {
-        "old_usd": 5546951715,
-        "new_usd": 6116065000,
-        "pct_change": 10.26
+        "old_usd": 5581375050,
+        "new_usd": 6272192997,
+        "pct_change": 12.38
       },
       "dominance": {
         "shares_pct": {
-          "USDC": 85.78
+          "USDC": 86.12
         },
-        "grand_total_usd": 4979558058.19
+        "grand_total_usd": 5109001040.1
       },
       "dominance_shift_vs_prev_run_pp": {
-        "USDC": -0.06
+        "USDC": 0.34
       },
       "scenario": "NEUTRAL — нет чёткого сигнала по текущим порогам"
     },
     "Solana": {
       "stablecoin_mcap": {
-        "old_usd": 15703846145.0,
-        "new_usd": 16365354347.58,
-        "pct_change": 4.21
+        "old_usd": 15647505777.0,
+        "new_usd": 17628179064.64,
+        "pct_change": 12.66
       },
       "tvl": {
-        "old_usd": 5782045073,
-        "new_usd": 6353769555,
-        "pct_change": 9.89
+        "old_usd": 5897086928,
+        "new_usd": 6479173061,
+        "pct_change": 9.87
       },
       "dominance": {
         "shares_pct": {
-          "USDT": 13.06,
-          "USDC": 45.76
+          "USDT": 15.84,
+          "USDC": 44.25
         },
-        "grand_total_usd": 16350694891.59
+        "grand_total_usd": 16829077344.03
       },
       "dominance_shift_vs_prev_run_pp": {
-        "USDT": -0.09,
-        "USDC": 0.36
+        "USDT": 2.78,
+        "USDC": -1.51
       },
-      "scenario": "NEUTRAL — нет чёткого сигнала по текущим порогам"
+      "scenario": "C — разгар хайпа, капитал сразу идёт в работу, осторожный вход"
     }
   },
   "not_automated": {
