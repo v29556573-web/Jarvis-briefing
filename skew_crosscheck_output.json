@@ -1,9 +1,9 @@
 {
-  "timestamp_utc": "2026-09-24T07:15:42.844051+00:00",
-  "skew_latest": 1.75,
-  "skew_trailing_mean_14d": 0.979,
-  "skew_trailing_std_14d": 0.7365,
-  "skew_zscore": 1.0474,
+  "timestamp_utc": "2026-09-25T07:15:43.767667+00:00",
+  "skew_latest": 0.9200000000000017,
+  "skew_trailing_mean_14d": 1.151,
+  "skew_trailing_std_14d": 0.5891,
+  "skew_zscore": -0.3929,
   "std_divisor": "n-1",
   "thresholds": {
     "critical": 2.231351,
@@ -15,17 +15,17 @@
     "source": "skew_block_output.json",
     "block_verdict": "NORMAL",
     "block_escalate": false,
-    "block_generated_at_utc": "2026-09-24T07:15:42Z",
+    "block_generated_at_utc": "2026-09-25T07:15:43Z",
     "block_age_hours": 0.0,
     "block_stale": false,
     "reason": "вердикт NORMAL — кросс-чек не требуется"
   },
   "baseline": {
     "window": 14,
-    "start": "2026-09-10",
-    "end": "2026-09-23",
+    "start": "2026-09-11",
+    "end": "2026-09-24",
     "includes_current": false,
-    "latest_date": "2026-09-24"
+    "latest_date": "2026-09-25"
   },
   "note": "Кросс-чек не запускался. Вердикт skew_block: NORMAL (escalate=False). Причина: вердикт NORMAL — кросс-чек не требуется. Ручной прогон: force_check=True."
 }
