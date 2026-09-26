@@ -1,26 +1,26 @@
 {
-  "timestamp_utc": "2026-09-26T13:54:39.897244+00:00",
+  "timestamp_utc": "2026-09-26T15:09:51.197624+00:00",
   "lookback_days": 7,
   "chains": {
     "Base": {
       "stablecoin_mcap": {
         "old_usd": 5015143287.0,
-        "new_usd": 5039697050.11,
-        "pct_change": 0.49
+        "new_usd": 5040391078.65,
+        "pct_change": 0.5
       },
       "tvl": {
         "old_usd": 5895626321,
-        "new_usd": 6267678855,
-        "pct_change": 6.31
+        "new_usd": 6268203727,
+        "pct_change": 6.32
       },
       "dominance": {
         "shares_pct": {
-          "USDC": 85.53
+          "USDC": 85.52
         },
-        "grand_total_usd": 5049344424.26
+        "grand_total_usd": 5050123149.86
       },
       "dominance_shift_vs_prev_run_pp": {
-        "USDC": 0.0
+        "USDC": -0.01
       },
       "native_token_price": {
         "coin": "coingecko:ethereum",
@@ -28,7 +28,7 @@
         "new_usd": 2690.8886985219224,
         "pct_change": 3.04
       },
-      "tvl_pct_price_adj": 3.17,
+      "tvl_pct_price_adj": 3.18,
       "scenario": "NEUTRAL — нет чёткого сигнала по текущим порогам",
       "scenario_candidate": "NEUTRAL — нет чёткого сигнала по текущим порогам",
       "scenario_raw": "NEUTRAL — нет чёткого сигнала по текущим порогам",
@@ -37,24 +37,24 @@
     "Solana": {
       "stablecoin_mcap": {
         "old_usd": 15808172052.0,
-        "new_usd": 16930932894.45,
+        "new_usd": 16931275837.11,
         "pct_change": 7.1
       },
       "tvl": {
         "old_usd": 6305737774,
-        "new_usd": 6614179794,
+        "new_usd": 6613784184,
         "pct_change": 4.89
       },
       "dominance": {
         "shares_pct": {
-          "USDT": 15.91,
-          "USDC": 43.7
+          "USDT": 14.92,
+          "USDC": 47.2
         },
-        "grand_total_usd": 16751793504.48
+        "grand_total_usd": 17865520492.15
       },
       "dominance_shift_vs_prev_run_pp": {
-        "USDT": 1.09,
-        "USDC": -3.7
+        "USDT": -0.99,
+        "USDC": 3.5
       },
       "native_token_price": {
         "coin": "coingecko:solana",

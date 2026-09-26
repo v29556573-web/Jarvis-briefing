@@ -2,11 +2,11 @@
   "Base": {
     "dominance": {
       "shares_pct": {
-        "USDC": 85.53
+        "USDC": 85.52
       },
-      "grand_total_usd": 5049344424.26
+      "grand_total_usd": 5050123149.86
     },
-    "last_run_utc": "2026-09-26T13:54:39.897244+00:00",
+    "last_run_utc": "2026-09-26T15:09:51.197624+00:00",
     "confirmed_scenario": "NEUTRAL \u2014 \u043d\u0435\u0442 \u0447\u0451\u0442\u043a\u043e\u0433\u043e \u0441\u0438\u0433\u043d\u0430\u043b\u0430 \u043f\u043e \u0442\u0435\u043a\u0443\u0449\u0438\u043c \u043f\u043e\u0440\u043e\u0433\u0430\u043c",
     "runs": [
       {
@@ -568,18 +568,28 @@
         "scenario_raw": "NEUTRAL",
         "candidate": "NEUTRAL",
         "confirmed": "NEUTRAL"
+      },
+      {
+        "run_utc": "2026-09-26T15:09:51.197624+00:00",
+        "stable_pct": 0.5,
+        "tvl_pct": 6.32,
+        "native_px_pct": 3.04,
+        "tvl_pct_price_adj": 3.18,
+        "scenario_raw": "NEUTRAL",
+        "candidate": "NEUTRAL",
+        "confirmed": "NEUTRAL"
       }
     ]
   },
   "Solana": {
     "dominance": {
       "shares_pct": {
-        "USDT": 15.91,
-        "USDC": 43.7
+        "USDT": 14.92,
+        "USDC": 47.2
       },
-      "grand_total_usd": 16751793504.48
+      "grand_total_usd": 17865520492.15
     },
-    "last_run_utc": "2026-09-26T13:54:39.897244+00:00",
+    "last_run_utc": "2026-09-26T15:09:51.197624+00:00",
     "confirmed_scenario": "NEUTRAL \u2014 \u043d\u0435\u0442 \u0447\u0451\u0442\u043a\u043e\u0433\u043e \u0441\u0438\u0433\u043d\u0430\u043b\u0430 \u043f\u043e \u0442\u0435\u043a\u0443\u0449\u0438\u043c \u043f\u043e\u0440\u043e\u0433\u0430\u043c",
     "runs": [
       {
@@ -1134,6 +1144,16 @@
       },
       {
         "run_utc": "2026-09-26T13:54:39.897244+00:00",
+        "stable_pct": 7.1,
+        "tvl_pct": 4.89,
+        "native_px_pct": 8.32,
+        "tvl_pct_price_adj": -3.17,
+        "scenario_raw": "NEUTRAL",
+        "candidate": "NEUTRAL",
+        "confirmed": "NEUTRAL"
+      },
+      {
+        "run_utc": "2026-09-26T15:09:51.197624+00:00",
         "stable_pct": 7.1,
         "tvl_pct": 4.89,
         "native_px_pct": 8.32,
