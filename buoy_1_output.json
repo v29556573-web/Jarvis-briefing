@@ -1,52 +1,52 @@
 {
-  "timestamp_utc": "2026-09-25T11:47:18.809827+00:00",
+  "timestamp_utc": "2026-09-26T11:21:02.118815+00:00",
   "lookback_days": 7,
   "chains": {
     "Base": {
       "stablecoin_mcap": {
-        "old_usd": 4970659114.0,
-        "new_usd": 4994633816.3,
-        "pct_change": 0.48
+        "old_usd": 5015143287.0,
+        "new_usd": 5039751292.74,
+        "pct_change": 0.49
       },
       "tvl": {
-        "old_usd": 5581375050,
-        "new_usd": 6272192997,
-        "pct_change": 12.38
+        "old_usd": 5895626321,
+        "new_usd": 6258707687,
+        "pct_change": 6.16
       },
       "dominance": {
         "shares_pct": {
-          "USDC": 86.12
+          "USDC": 85.53
         },
-        "grand_total_usd": 5109001040.1
+        "grand_total_usd": 5049006667.05
       },
       "dominance_shift_vs_prev_run_pp": {
-        "USDC": 0.34
+        "USDC": -0.59
       },
       "scenario": "NEUTRAL — нет чёткого сигнала по текущим порогам"
     },
     "Solana": {
       "stablecoin_mcap": {
-        "old_usd": 15647505777.0,
-        "new_usd": 17628179064.64,
-        "pct_change": 12.66
+        "old_usd": 15808172052.0,
+        "new_usd": 16930971122.38,
+        "pct_change": 7.1
       },
       "tvl": {
-        "old_usd": 5897086928,
-        "new_usd": 6479173061,
-        "pct_change": 9.87
+        "old_usd": 6305737774,
+        "new_usd": 6582314435,
+        "pct_change": 4.39
       },
       "dominance": {
         "shares_pct": {
-          "USDT": 15.84,
-          "USDC": 44.25
+          "USDT": 14.82,
+          "USDC": 47.4
         },
-        "grand_total_usd": 16829077344.03
+        "grand_total_usd": 17979089696.32
       },
       "dominance_shift_vs_prev_run_pp": {
-        "USDT": 2.78,
-        "USDC": -1.51
+        "USDT": -1.02,
+        "USDC": 3.15
       },
-      "scenario": "C — разгар хайпа, капитал сразу идёт в работу, осторожный вход"
+      "scenario": "NEUTRAL — нет чёткого сигнала по текущим порогам"
     }
   },
   "not_automated": {
