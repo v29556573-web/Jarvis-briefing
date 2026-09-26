@@ -1,9 +1,12 @@
 name: Buoy 1 Stablecoin Radar
 
+# Время запуска задаётся внешним триггером cron-job.org на 06:50 UTC
+# (решение Viktor 26.09.2026, по прецеденту skew 29.08.2026).
+# Собственное расписание GitHub снято: cron '15 6 * * *' фактически
+# срабатывал в 10:54–12:43 UTC, и утренний Daily Check (07:46 UTC)
+# каждый день видел вчерашнюю точку как STALE.
 on:
-  schedule:
-    - cron: '15 6 * * *'   # ежедневно, смести от других cron'ов (skew/CME-OKX), чтобы не было queue congestion
-  workflow_dispatch: {}     # ручной запуск из вкладки Actions
+  workflow_dispatch: {}     # запуск: cron-job.org (06:50 UTC) или вручную из Actions
 
 jobs:
   run-buoy-1:
