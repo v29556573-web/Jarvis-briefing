@@ -2,11 +2,11 @@
   "Base": {
     "dominance": {
       "shares_pct": {
-        "USDC": 85.51
+        "USDC": 85.47
       },
-      "grand_total_usd": 5045725799.69
+      "grand_total_usd": 5032937427.52
     },
-    "last_run_utc": "2026-09-27T06:50:41.371348+00:00",
+    "last_run_utc": "2026-09-28T06:50:43.554719+00:00",
     "confirmed_scenario": "NEUTRAL \u2014 \u043d\u0435\u0442 \u0447\u0451\u0442\u043a\u043e\u0433\u043e \u0441\u0438\u0433\u043d\u0430\u043b\u0430 \u043f\u043e \u0442\u0435\u043a\u0443\u0449\u0438\u043c \u043f\u043e\u0440\u043e\u0433\u0430\u043c",
     "runs": [
       {
@@ -588,18 +588,28 @@
         "scenario_raw": "NEUTRAL",
         "candidate": "NEUTRAL",
         "confirmed": "NEUTRAL"
+      },
+      {
+        "run_utc": "2026-09-28T06:50:43.554719+00:00",
+        "stable_pct": 0.88,
+        "tvl_pct": 4.59,
+        "native_px_pct": 1.62,
+        "tvl_pct_price_adj": 2.92,
+        "scenario_raw": "NEUTRAL",
+        "candidate": "NEUTRAL",
+        "confirmed": "NEUTRAL"
       }
     ]
   },
   "Solana": {
     "dominance": {
       "shares_pct": {
-        "USDT": 15.95,
-        "USDC": 43.53
+        "USDT": 15.92,
+        "USDC": 43.67
       },
-      "grand_total_usd": 16713783300.36
+      "grand_total_usd": 16736966531.57
     },
-    "last_run_utc": "2026-09-27T06:50:41.371348+00:00",
+    "last_run_utc": "2026-09-28T06:50:43.554719+00:00",
     "confirmed_scenario": "NEUTRAL \u2014 \u043d\u0435\u0442 \u0447\u0451\u0442\u043a\u043e\u0433\u043e \u0441\u0438\u0433\u043d\u0430\u043b\u0430 \u043f\u043e \u0442\u0435\u043a\u0443\u0449\u0438\u043c \u043f\u043e\u0440\u043e\u0433\u0430\u043c",
     "runs": [
       {
@@ -1180,6 +1190,16 @@
         "tvl_pct_price_adj": -2.06,
         "scenario_raw": "C",
         "candidate": "A",
+        "confirmed": "NEUTRAL"
+      },
+      {
+        "run_utc": "2026-09-28T06:50:43.554719+00:00",
+        "stable_pct": 5.16,
+        "tvl_pct": 6.04,
+        "native_px_pct": 9.72,
+        "tvl_pct_price_adj": -3.35,
+        "scenario_raw": "C",
+        "candidate": "NEUTRAL",
         "confirmed": "NEUTRAL"
       }
     ]
