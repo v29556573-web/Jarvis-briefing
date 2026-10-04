@@ -1,14 +1,16 @@
 name: JARVIS Morning Briefing
 
+# Запуск только извне: cron-job.org → workflow_dispatch
+# (Morning Briefing 08:13 MSK, Pre-Market 15:46 MSK).
+# Блок schedule: удалён 04.10.2026: расписание GitHub дублировало cron-job.org
+# (4 запуска в сутки вместо 2) и плавало по времени.
 on:
-  schedule:
-    - cron: "13 6 * * *"
-    - cron: "7 13 * * *"   # ~16:07 МСК — перед открытием NYSE
   workflow_dispatch: {}
 
 jobs:
   send-briefing:
-    runs-on: ubuntu-latest
+    # Закреплено 04.10.2026: с 19.10 ubuntu-latest переходит на Ubuntu 26
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
