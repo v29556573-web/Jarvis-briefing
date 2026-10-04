@@ -4,9 +4,9 @@
       "shares_pct": {
         "USDC": 84.81
       },
-      "grand_total_usd": 5163013591.26
+      "grand_total_usd": 5158126291.39
     },
-    "last_run_utc": "2026-10-03T06:50:39.766906+00:00",
+    "last_run_utc": "2026-10-04T06:50:45.858603+00:00",
     "confirmed_scenario": "NEUTRAL \u2014 \u043d\u0435\u0442 \u0447\u0451\u0442\u043a\u043e\u0433\u043e \u0441\u0438\u0433\u043d\u0430\u043b\u0430 \u043f\u043e \u0442\u0435\u043a\u0443\u0449\u0438\u043c \u043f\u043e\u0440\u043e\u0433\u0430\u043c",
     "runs": [
       {
@@ -648,18 +648,28 @@
         "scenario_raw": "NEUTRAL",
         "candidate": "NEUTRAL",
         "confirmed": "NEUTRAL"
+      },
+      {
+        "run_utc": "2026-10-04T06:50:45.858603+00:00",
+        "stable_pct": 2.25,
+        "tvl_pct": 1.74,
+        "native_px_pct": -0.32,
+        "tvl_pct_price_adj": 2.07,
+        "scenario_raw": "NEUTRAL",
+        "candidate": "NEUTRAL",
+        "confirmed": "NEUTRAL"
       }
     ]
   },
   "Solana": {
     "dominance": {
       "shares_pct": {
-        "USDT": 16.84,
-        "USDC": 44.31
+        "USDT": 16.93,
+        "USDC": 44.1
       },
-      "grand_total_usd": 16892268493.51
+      "grand_total_usd": 16798902333.33
     },
-    "last_run_utc": "2026-10-03T06:50:39.766906+00:00",
+    "last_run_utc": "2026-10-04T06:50:45.858603+00:00",
     "confirmed_scenario": "NEUTRAL \u2014 \u043d\u0435\u0442 \u0447\u0451\u0442\u043a\u043e\u0433\u043e \u0441\u0438\u0433\u043d\u0430\u043b\u0430 \u043f\u043e \u0442\u0435\u043a\u0443\u0449\u0438\u043c \u043f\u043e\u0440\u043e\u0433\u0430\u043c",
     "runs": [
       {
@@ -1298,6 +1308,16 @@
         "tvl_pct": 0.07,
         "native_px_pct": -2.86,
         "tvl_pct_price_adj": 3.02,
+        "scenario_raw": "NEUTRAL",
+        "candidate": "NEUTRAL",
+        "confirmed": "NEUTRAL"
+      },
+      {
+        "run_utc": "2026-10-04T06:50:45.858603+00:00",
+        "stable_pct": 0.46,
+        "tvl_pct": 0.99,
+        "native_px_pct": -1.46,
+        "tvl_pct_price_adj": 2.49,
         "scenario_raw": "NEUTRAL",
         "candidate": "NEUTRAL",
         "confirmed": "NEUTRAL"
