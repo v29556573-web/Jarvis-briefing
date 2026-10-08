@@ -1,9 +1,9 @@
 {
-  "timestamp_utc": "2026-10-07T07:15:46.164486+00:00",
-  "skew_latest": -0.8500000000000014,
-  "skew_trailing_mean_14d": 0.895,
-  "skew_trailing_std_14d": 0.5666,
-  "skew_zscore": -3.0795,
+  "timestamp_utc": "2026-10-08T07:15:47.849760+00:00",
+  "skew_latest": 3.0800000000000054,
+  "skew_trailing_mean_14d": 0.788,
+  "skew_trailing_std_14d": 0.7337,
+  "skew_zscore": 3.124,
   "std_divisor": "n-1",
   "thresholds": {
     "critical": 2.231351,
@@ -13,19 +13,19 @@
   "critical_breach": true,
   "gate": {
     "source": "skew_block_output.json",
-    "block_verdict": "CRITICAL_CALL_PREMIUM",
+    "block_verdict": "CRITICAL_PUT_PREMIUM",
     "block_escalate": false,
-    "block_generated_at_utc": "2026-10-07T07:15:45Z",
+    "block_generated_at_utc": "2026-10-08T07:15:47Z",
     "block_age_hours": 0.0,
     "block_stale": false,
-    "reason": "вердикт CRITICAL_CALL_PREMIUM"
+    "reason": "вердикт CRITICAL_PUT_PREMIUM"
   },
   "baseline": {
     "window": 14,
-    "start": "2026-09-23",
-    "end": "2026-10-06",
+    "start": "2026-09-24",
+    "end": "2026-10-07",
     "includes_current": false,
-    "latest_date": "2026-10-07"
+    "latest_date": "2026-10-08"
   },
   "crosscheck": {
     "funding_rate_pct_8h": "ДАННЫЕ НЕ ПОЛУЧЕНЫ",
