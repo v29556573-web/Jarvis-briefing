@@ -1,0 +1,31 @@
+name: DXY ECB Collector
+
+# §7.5 вторичный триггер: расчётный DXY по референсным курсам ЕЦБ, Δ5 > +1.5%.
+# Эталон DXY с 18.10.2026 [RATIFIED Viktor]. ЕЦБ публикует курсы ~16:00 CET.
+# Расписание GitHub ненадёжно (опоздания, пропуски), но здесь это безопасно:
+# каждый запуск перекачивает весь ряд, пропущенный день восстанавливается следующим.
+on:
+  schedule:
+    - cron: '20 16 * * 1-5'   # 16:20 UTC, будни (после публикации ЕЦБ и зимой, и летом)
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  run-dxy-ecb:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python3 jarvis_dxy_ecb.py
+      - name: Commit updated series/output
+        run: |
+          git config user.name "actions-user"
+          git config user.email "actions@github.com"
+          git add dxy_ecb.csv dxy_ecb_output.json
+          git diff --staged --quiet || git commit -m "Update DXY ECB"
+          git pull --rebase origin main
+          git push
