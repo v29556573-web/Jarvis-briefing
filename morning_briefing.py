@@ -9,12 +9,17 @@
 Правь список SYMBOLS и уровни POSITIONS под актуальные открытые позиции.
 """
 
+import json
 import os
 import sys
+from datetime import date, datetime, timezone
 import requests
 import derivatives_block_v1 as deriv
 
 MEXC_BASE = "https://api.mexc.com/api/v3"
+# §7.5 вторичный триггер DXY: расчётный DXY ЕЦБ [RATIFIED 18.10.2026], файл пишет dxy-ecb-collector.yml
+DXY_FILE = "dxy_ecb_output.json"
+DXY_STALE_DAYS = 5   # пн видит фиксинг пт (3 дня); праздники TARGET дают до 5
 
 # --- Настрой под свои текущие открытые позиции ---
 SYMBOLS = ["BTCUSDT"]
@@ -112,6 +117,26 @@ def format_derivatives_section(symbols=None) -> str:
 
     return "\n".join(lines)
 
+def format_dxy_line() -> str:
+    try:
+        with open(DXY_FILE, encoding="utf-8") as f:
+            d = json.load(f)
+    except Exception as e:
+        return f"⚪ *DXY ЕЦБ*: нет данных ({type(e).__name__})\n"
+    try:
+        age = (datetime.now(timezone.utc).date() - date.fromisoformat(d["date"])).days
+    except Exception:
+        age = None
+    stale = " ⚠ STALE" if age is None or age > DXY_STALE_DAYS else ""
+    d5 = d.get("d5_pct")
+    d5s = f"{d5:+.2f}%" if isinstance(d5, (int, float)) else "—"
+    trig = d.get("trigger") is True
+    icon = "🔴" if trig else "🟢"
+    verdict = "СРАБОТАЛ → карантин §7.5" if trig else "нет"
+    return (f"{icon} *DXY ЕЦБ* {d.get('dxy_ecb', 0):.2f} · Δ5 {d5s} (порог +{d.get('threshold_pct', 1.5)}%) · триггер: {verdict}\n"
+            f"  фиксинг {d.get('date', '?')}{stale}\n")
+
+
 def build_message() -> str:
     lines = ["🌅 *Утренний брифинг JARVIS*\n"]
     for symbol in SYMBOLS:
@@ -134,6 +159,7 @@ def build_message() -> str:
         if pos_line:
             lines.append(pos_line)
         lines.append("")
+    lines.append(format_dxy_line())
     lines.append(format_derivatives_section())
 
     return "\n".join(lines)
