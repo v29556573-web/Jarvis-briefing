@@ -1,9 +1,9 @@
 {
-  "timestamp_utc": "2026-10-25T07:15:45.745684+00:00",
-  "skew_latest": 4.989999999999995,
-  "skew_trailing_mean_14d": 3.077,
-  "skew_trailing_std_14d": 0.7186,
-  "skew_zscore": 2.6621,
+  "timestamp_utc": "2026-10-26T07:15:48.073719+00:00",
+  "skew_latest": 4.439999999999998,
+  "skew_trailing_mean_14d": 3.234,
+  "skew_trailing_std_14d": 0.8749,
+  "skew_zscore": 1.3789,
   "std_divisor": "n-1",
   "thresholds": {
     "critical": 2.231351,
@@ -13,19 +13,19 @@
   "critical_breach": false,
   "gate": {
     "source": "skew_block_output.json",
-    "block_verdict": "SIGNAL_PUT_PREMIUM",
+    "block_verdict": "NORMAL",
     "block_escalate": false,
-    "block_generated_at_utc": "2026-10-25T07:15:45Z",
+    "block_generated_at_utc": "2026-10-26T07:15:47Z",
     "block_age_hours": 0.0,
     "block_stale": false,
-    "reason": "вердикт SIGNAL_PUT_PREMIUM — кросс-чек не требуется"
+    "reason": "вердикт NORMAL — кросс-чек не требуется"
   },
   "baseline": {
     "window": 14,
-    "start": "2026-10-11",
-    "end": "2026-10-24",
+    "start": "2026-10-12",
+    "end": "2026-10-25",
     "includes_current": false,
-    "latest_date": "2026-10-25"
+    "latest_date": "2026-10-26"
   },
-  "note": "Кросс-чек не запускался. Вердикт skew_block: SIGNAL_PUT_PREMIUM (escalate=False). Причина: вердикт SIGNAL_PUT_PREMIUM — кросс-чек не требуется. Ручной прогон: force_check=True."
+  "note": "Кросс-чек не запускался. Вердикт skew_block: NORMAL (escalate=False). Причина: вердикт NORMAL — кросс-чек не требуется. Ручной прогон: force_check=True."
 }
