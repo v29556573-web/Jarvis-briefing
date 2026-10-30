@@ -2,11 +2,11 @@
   "Base": {
     "dominance": {
       "shares_pct": {
-        "USDC": 84.71
+        "USDC": 84.72
       },
-      "grand_total_usd": 5001547518.67
+      "grand_total_usd": 5025888976.37
     },
-    "last_run_utc": "2026-10-29T06:50:42.409099+00:00",
+    "last_run_utc": "2026-10-30T06:50:43.191136+00:00",
     "confirmed_scenario": "NEUTRAL \u2014 \u043d\u0435\u0442 \u0447\u0451\u0442\u043a\u043e\u0433\u043e \u0441\u0438\u0433\u043d\u0430\u043b\u0430 \u043f\u043e \u0442\u0435\u043a\u0443\u0449\u0438\u043c \u043f\u043e\u0440\u043e\u0433\u0430\u043c",
     "runs": [
       {
@@ -908,18 +908,28 @@
         "scenario_raw": "NEUTRAL",
         "candidate": "NEUTRAL",
         "confirmed": "NEUTRAL"
+      },
+      {
+        "run_utc": "2026-10-30T06:50:43.191136+00:00",
+        "stable_pct": -0.45,
+        "tvl_pct": -5.68,
+        "native_px_pct": -5.74,
+        "tvl_pct_price_adj": 0.06,
+        "scenario_raw": "NEUTRAL",
+        "candidate": "NEUTRAL",
+        "confirmed": "NEUTRAL"
       }
     ]
   },
   "Solana": {
     "dominance": {
       "shares_pct": {
-        "USDT": 16.85,
-        "USDC": 43.51
+        "USDT": 15.57,
+        "USDC": 44.8
       },
-      "grand_total_usd": 15623012196.31
+      "grand_total_usd": 15418403059.25
     },
-    "last_run_utc": "2026-10-29T06:50:42.409099+00:00",
+    "last_run_utc": "2026-10-30T06:50:43.191136+00:00",
     "confirmed_scenario": "NEUTRAL \u2014 \u043d\u0435\u0442 \u0447\u0451\u0442\u043a\u043e\u0433\u043e \u0441\u0438\u0433\u043d\u0430\u043b\u0430 \u043f\u043e \u0442\u0435\u043a\u0443\u0449\u0438\u043c \u043f\u043e\u0440\u043e\u0433\u0430\u043c",
     "runs": [
       {
@@ -1818,6 +1828,16 @@
         "tvl_pct": -5.52,
         "native_px_pct": -4.32,
         "tvl_pct_price_adj": -1.25,
+        "scenario_raw": "NEUTRAL",
+        "candidate": "NEUTRAL",
+        "confirmed": "NEUTRAL"
+      },
+      {
+        "run_utc": "2026-10-30T06:50:43.191136+00:00",
+        "stable_pct": -3.18,
+        "tvl_pct": -7.78,
+        "native_px_pct": -7.79,
+        "tvl_pct_price_adj": 0.01,
         "scenario_raw": "NEUTRAL",
         "candidate": "NEUTRAL",
         "confirmed": "NEUTRAL"
