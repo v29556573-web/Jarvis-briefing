@@ -1,11 +1,5 @@
 [
   {
-    "date": "2026-10-22",
-    "timestamp_utc": "2026-10-22T07:15:43Z",
-    "skew": 3.289999999999999,
-    "value_type": "intraday"
-  },
-  {
     "date": "2026-10-23",
     "timestamp_utc": "2026-10-23T07:15:40Z",
     "skew": 2.6199999999999974,
@@ -45,6 +39,12 @@
     "date": "2026-10-29",
     "timestamp_utc": "2026-10-29T07:15:41Z",
     "skew": 3.1000000000000014,
+    "value_type": "intraday"
+  },
+  {
+    "date": "2026-10-30",
+    "timestamp_utc": "2026-10-30T07:15:47Z",
+    "skew": 2.4100000000000037,
     "value_type": "intraday"
   }
 ]
