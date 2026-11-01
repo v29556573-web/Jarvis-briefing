@@ -118,6 +118,26 @@ HARD RULE: при сбое запроса — "ДАННЫЕ НЕ ПОЛУЧЕН�
       каждого источника, ничего не пишет.
   Пороги и логика classify_convergence НЕ менялись.
 
+=====================================================================
+[АКТ Viktor 01.11.2026 «Ратифицирую» — rule_version crosscheck-v1.2]
+=====================================================================
+  D1. ФАНДИНГ ПО §10.2: d = f − 0.01% (0.01%/8h — ноль). Мёртвая зона
+      считается по |d| < 0.005% (было: |funding| < 0.01% — двойной порог
+      на одном поле, [UNRECONCILED] снят актом). Зачёт — по 3 последним
+      РАСЧЁТАМ (settled), не по текущему принту:
+        все три |d| < 0.005%           -> benign
+        все три d ≥ +0.005%            -> diverging (перегретые лонги)
+        все три d ≤ −0.005%            -> НЕ ЗАЧТЕНО: §10.2 [10.08] «d ≤ 0 —
+                                          не направленный сигнал» (уточнение
+                                          Judge к акту — на подтверждение Viktor)
+        иначе                           -> НЕ ЗАЧТЕНО (не голосует)
+      Источник расчётов: Bybit (bybit -> bytick) -> MEXC history (резерв C2).
+  D2. НОГА L/S ОТКЛЮЧЕНА до калибровки (Bybit/Binance закрыты для GitHub;
+      Kraken вне §2.8; порог кабинетный). Не запрашивается, не голосует.
+  D3. rule_version в выводе — вердикты разных версий правила не смешиваются
+      (история для PR-18).
+  Порог basis 0.5% не менялся (§12 №35 — открыт).
+
 Запуск:
   pip install requests --break-system-packages
   python3 skew_crosscheck.py
@@ -153,6 +173,7 @@ BYBIT_TICKERS_PATH = "/v5/market/tickers"
 ALLOW_MEXC_FALLBACK = True   # [РЕШЕНИЕ Viktor 01.11.2026: «да, включай»]
 MEXC_TICKER_URL = "https://contract.mexc.com/api/v1/contract/ticker"
 MEXC_SYMBOL = "BTC_USDT"
+MEXC_FUNDING_HISTORY_URL = "https://contract.mexc.com/api/v1/contract/funding_rate/history"
 
 SYMBOL = "BTCUSDT"
 
@@ -170,7 +191,14 @@ T_SIGNAL = 1.608964
 
 BASELINE_WINDOW = 14      # канон [РЕШЕНИЕ VIKTOR 15.08.2026]
 
-FUNDING_FLAT_THRESHOLD = 0.01     # % за 8ч, ниже — считаем "плоско"
+# [ПРЕДЫДУЩЕЕ, до 01.11.2026] FUNDING_FLAT_THRESHOLD = 0.01 (% за 8ч, по сырому |funding|).
+# В расчёте НЕ УЧАСТВУЕТ. Заменён актом D1:
+RULE_VERSION = "crosscheck-v1.2-2026-11-01"
+FUNDING_BASE = 0.01               # % за 8ч — кламп/ноль §10.2
+FUNDING_DEAD_ZONE_D = 0.005       # |d| < этого -> нейтрально (§10.2, по d — акт 01.11)
+FUNDING_SETTLEMENTS = 3           # персистентность §10.2
+NOT_COUNTED = "НЕ ЗАЧТЕНО"
+LS_DISABLED = "ОТКЛЮЧЕНО"
 LS_RATIO_STABILITY_WINDOW = 5     # последних точек для оценки стабильности
 
 # [ПАТЧ B4] Порог устаревания skew_block_output.json, часов.
@@ -307,7 +335,49 @@ def compute_skew_zscore(history, lookback_days=BASELINE_WINDOW):
 SOURCES = {}   # [ПАТЧ C3] провенанс ног: metric -> строка источника
 
 
+def get_funding_settlements(n=FUNDING_SETTLEMENTS):
+    """[АКТ D1] Последние n РАСЧЁТОВ фандинга, в %, от нового к старому."""
+    result, host = bybit_get(BYBIT_FUNDING_PATH, {"category": "linear", "symbol": SYMBOL, "limit": n})
+    if result and len(result.get("list") or []) >= n:
+        SOURCES["funding"] = f"Bybit {host} — {n} последних расчётов"
+        return [float(x["fundingRate"]) * 100 for x in result["list"][:n]]
+    if ALLOW_MEXC_FALLBACK:
+        try:
+            r = requests.get(MEXC_FUNDING_HISTORY_URL,
+                             params={"symbol": MEXC_SYMBOL, "page_num": 1, "page_size": n},
+                             timeout=15, headers={"User-Agent": "jarvis-crosscheck/1.2"})
+            r.raise_for_status()
+            d = r.json()
+            lst = ((d.get("data") or {}).get("resultList") or []) if d.get("success") else []
+            if len(lst) >= n:
+                lst = sorted(lst, key=lambda x: x["settleTime"], reverse=True)[:n]
+                SOURCES["funding"] = "MEXC contract API — " + f"{n} последних расчётов (settled), резерв C2"
+                return [float(x["fundingRate"]) * 100 for x in lst]
+        except Exception as e:
+            print(f"[WARN] fetch failed: {MEXC_FUNDING_HISTORY_URL} -> {e}")
+    SOURCES["funding"] = NO_DATA
+    return None
+
+
+def classify_funding(settled):
+    """[АКТ D1] Возвращает (verdict, detail) по d = f − 0.01%, 3 расчёта."""
+    if not settled:
+        return NO_DATA, NO_DATA
+    ds = [f - FUNDING_BASE for f in settled]
+    txt = ", ".join(f"{f:.4f}% (d {d:+.4f})" for f, d in zip(settled, ds))
+    if all(abs(d) < FUNDING_DEAD_ZONE_D for d in ds):
+        return "benign", f"3 расчёта в мёртвой зоне |d|<{FUNDING_DEAD_ZONE_D}%: {txt}"
+    if all(d >= FUNDING_DEAD_ZONE_D for d in ds):
+        return "diverging", f"3 расчёта подряд выше зоны, перегретые лонги: {txt}"
+    if all(d <= -FUNDING_DEAD_ZONE_D for d in ds):
+        # §10.2 [RATIFIED 10.08]: d ≤ 0 — состояние по умолчанию (97.42%),
+        # НЕ направленный сигнал и не нога сходимости -> не голосует.
+        return NOT_COUNTED, f"d < 0 три расчёта — не направленный сигнал по §10.2 (10.08): {txt}"
+    return NOT_COUNTED, f"персистентность не выполнена (§10.2): {txt}"
+
+
 def get_funding_rate():
+    """[ПРЕДЫДУЩЕЕ, до 01.11.2026] один последний принт. В run() НЕ вызывается."""
     result, host = bybit_get(BYBIT_FUNDING_PATH, {"category": "linear", "symbol": SYMBOL, "limit": 1})
     if result and result.get("list"):
         SOURCES["funding"] = f"Bybit {host} — последний расчёт (settled)"
@@ -360,7 +430,7 @@ def get_basis():
     return basis_abs, basis_pct
 
 
-def classify_convergence(funding, ls_stable, basis_pct):
+def classify_convergence(funding, ls_stable, basis_pct, funding_settled=None):
     """Применяет Convergence Rule из протокола.
 
     ⚠️ ВСЕ ТРИ ПОРОГА КАБИНЕТНЫЕ, эмпирикой не подтверждены. Ветка
@@ -369,16 +439,14 @@ def classify_convergence(funding, ls_stable, basis_pct):
     """
     signals = []
 
-    if funding is not None:
-        if abs(funding) < FUNDING_FLAT_THRESHOLD:
-            signals.append(("funding", "benign", f"{funding:.4f}% — плоский"))
-        else:
-            direction = "перегретые лонги" if funding > 0 else "перегретые шорты"
-            signals.append(("funding", "diverging", f"{funding:.4f}% — {direction}"))
-    else:
-        signals.append(("funding", NO_DATA, NO_DATA))
+    # [АКТ D1, 01.11.2026] фандинг по d и 3 расчётам
+    fv, fdet = classify_funding(funding_settled)
+    signals.append(("funding", fv, fdet))
 
-    if ls_stable is not None:
+    # [АКТ D2, 01.11.2026] нога L/S отключена до калибровки
+    if ls_stable == LS_DISABLED:
+        signals.append(("ls_ratio", LS_DISABLED, "нога отключена до калибровки [акт Viktor 01.11.2026]"))
+    elif ls_stable is not None:
         if ls_stable:
             signals.append(("ls_ratio", "benign", "стабильно, нет резкого сдвига толпы"))
         else:
@@ -397,10 +465,11 @@ def classify_convergence(funding, ls_stable, basis_pct):
     benign_count = sum(1 for _, verdict, _ in signals if verdict == "benign")
     diverging_count = sum(1 for _, verdict, _ in signals if verdict == "diverging")
     no_data_count = sum(1 for _, verdict, _ in signals if verdict == NO_DATA)
+    active = sum(1 for _, verdict, _ in signals if verdict != LS_DISABLED)
 
     if diverging_count > 0:
         overall = "AMBIGUOUS — минимум одна метрика расходится, ждать подтверждения ценой (CHoCH/BOS)"
-    elif no_data_count == len(signals):
+    elif no_data_count == active:
         overall = NO_DATA
     elif benign_count >= 2:
         overall = "LEANS BENIGN/BULLISH — метрики согласованы, склоняется к accumulation/hedge-unwind, не к vol crush"
@@ -482,6 +551,7 @@ def run(force_check=False):
         "std_divisor": "n-1",
         "thresholds": {"critical": T_CRITICAL, "signal": T_SIGNAL},
         "formula_version": "v2-corrected-2026-09-13",
+        "rule_version": RULE_VERSION,
         "critical_breach": breach,
         "gate": gate,
         "baseline": {
@@ -508,24 +578,29 @@ def run(force_check=False):
         print(f"\nЗаписано в {OUTPUT_PATH}")
         return result
 
-    funding = get_funding_rate()
-    ls_latest, ls_stable = get_ls_ratio_stability()
+    # [АКТ 01.11.2026] фандинг — 3 расчёта; L/S отключена; basis без изменений
+    funding_settled = get_funding_settlements()
+    funding = funding_settled[0] if funding_settled else None
+    ls_latest, ls_stable = None, LS_DISABLED
+    SOURCES["ls_ratio"] = LS_DISABLED + " (акт 01.11.2026)"
     basis_abs, basis_pct = get_basis()
 
-    signals, overall = classify_convergence(funding, ls_stable, basis_pct)
+    signals, overall = classify_convergence(funding, ls_stable, basis_pct, funding_settled)
 
     result["crosscheck"] = {
         "funding_rate_pct_8h": funding if funding is not None else NO_DATA,
-        "ls_ratio_latest": ls_latest if ls_latest is not None else NO_DATA,
-        "ls_ratio_stable": ls_stable if ls_stable is not None else NO_DATA,
+        "funding_settled_pct": funding_settled if funding_settled else NO_DATA,
+        "funding_d_pct": [round(f - FUNDING_BASE, 6) for f in funding_settled] if funding_settled else NO_DATA,
+        "ls_ratio_latest": LS_DISABLED,
+        "ls_ratio_stable": LS_DISABLED,
         "basis_pct": round(basis_pct, 4) if basis_pct is not None else NO_DATA,
         "sources": dict(SOURCES),
         "signals": [{"metric": m, "verdict": v, "detail": d} for m, v, d in signals],
         "overall_verdict": overall,
         "thresholds_uncalibrated": (
-            "⚠️ funding 0.01%/8ч КОНФЛИКТУЕТ с мёртвой зоной §10.2 (0.005%); "
+            "funding: d = f − 0.01%, |d| < 0.005%, 3 расчёта (§10.2, акт 01.11; калибровка §10.2 не завершена); "
             "basis 0.5% — нога вычеркнута из §10.5 по §12 №35 (отрицателен "
-            "99.00% дней); ls spread 0.05 за 25 мин. Все пороги кабинетные."
+            "99.00% дней), порог кабинетный; L/S отключена (акт 01.11)."
         ),
         "not_automated": "CME vs aggregate exchange OI divergence — Coinglass per-exchange breakdown is JS-rendered, requires manual check at coinglass.com/ru/open-interest/BTC",
     }
@@ -537,7 +612,7 @@ def run(force_check=False):
     print(f"\nЗаписано в {OUTPUT_PATH}")
 
     # [ПАТЧ C4] громкий сбой: кросс-чек был обязан работать и не получил ничего
-    if funding is None and ls_stable is None and basis_pct is None:
+    if funding is None and basis_pct is None:
         print("::error::Кросс-чек §10.3: НИ ОДНОЙ ноги не получено "
               f"(источники: {SOURCES}). Вывод записан, точка skew цела.")
         sys.exit(2)
