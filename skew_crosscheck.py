@@ -106,7 +106,7 @@ HARD RULE: при сбое запроса — "ДАННЫЕ НЕ ПОЛУЧЕН�
 
   C1. ЦЕПОЧКА ХОСТОВ Bybit: api.bybit.com -> api.bytick.com (официальный
       резервный домен Bybit, тот же источник §2.8).
-  C2. РЕЗЕРВ MEXC (contract.mexc.com) для funding и basis — ТОЛЬКО при
+  C2. РЕЗЕРВ MEXC (contract.mexc.com) для funding и basis [ВКЛЮЧЁН Viktor 01.11] — при
       ALLOW_MEXC_FALLBACK = True (решение Viktor по §2.8: MEXC — источник
       данных «пока да», 22.10; способ доступа — публичный API). L/S у MEXC
       публично нет — нога остаётся только Bybit.
@@ -150,7 +150,7 @@ BYBIT_TICKERS_PATH = "/v5/market/tickers"
 #   — единственный хост, 403 с облачных IP GitHub.
 
 # [ПАТЧ C2, 01.11.2026] резерв MEXC. ⛔ Включается ТОЛЬКО решением Viktor (§2.8).
-ALLOW_MEXC_FALLBACK = False
+ALLOW_MEXC_FALLBACK = True   # [РЕШЕНИЕ Viktor 01.11.2026: «да, включай»]
 MEXC_TICKER_URL = "https://contract.mexc.com/api/v1/contract/ticker"
 MEXC_SYMBOL = "BTC_USDT"
 
