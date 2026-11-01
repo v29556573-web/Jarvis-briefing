@@ -96,6 +96,28 @@ HARD RULE: при сбое запроса — "ДАННЫЕ НЕ ПОЛУЧЕН�
   ls_stable: spread < 0.05 за 5 точек по 5 минут (окно 25 минут)
   classify_convergence: diverging_count > 0 -> AMBIGUOUS (1 из 3 убивает)
 
+=====================================================================
+[ПАТЧ 01.11.2026 — Mark50-Judge · «Око»: третья нога молчала с августа]
+=====================================================================
+  ДИАГНОЗ (лог GitHub Actions 31.10 07:15:44 UTC): все три запроса к
+  api.bybit.com -> 403 Forbidden. Bybit режет облачные IP (как Colab).
+  Архив 22.08 — те же «ДАННЫЕ НЕ ПОЛУЧЕНЫ»: кросс-чек не получал ни одной
+  ноги минимум с 22.08, а job оставался зелёным (молчаливый сбой).
+
+  C1. ЦЕПОЧКА ХОСТОВ Bybit: api.bybit.com -> api.bytick.com (официальный
+      резервный домен Bybit, тот же источник §2.8).
+  C2. РЕЗЕРВ MEXC (contract.mexc.com) для funding и basis [ВКЛЮЧЁН Viktor 01.11] — при
+      ALLOW_MEXC_FALLBACK = True (решение Viktor по §2.8: MEXC — источник
+      данных «пока да», 22.10; способ доступа — публичный API). L/S у MEXC
+      публично нет — нога остаётся только Bybit.
+  C3. ПРОВЕНАНС: в выводе у каждой ноги — фактический источник и хост.
+  C4. ГРОМКИЙ СБОЙ: если кросс-чек ДОЛЖЕН был работать (breach) и не
+      получил НИ ОДНОЙ ноги — выход с кодом 2 -> шаг «Fail if cross-check
+      failed» краснеет. Точка skew при этом сохраняется (if: always()).
+  C5. PROBE: python skew_crosscheck.py --probe — печатает HTTP-статус
+      каждого источника, ничего не пишет.
+  Пороги и логика classify_convergence НЕ менялись.
+
 Запуск:
   pip install requests --break-system-packages
   python3 skew_crosscheck.py
@@ -103,6 +125,7 @@ HARD RULE: при сбое запроса — "ДАННЫЕ НЕ ПОЛУЧЕН�
 
 import json
 import os
+import sys
 from datetime import datetime, timezone
 
 import requests
@@ -117,10 +140,19 @@ SKEW_HISTORY_PATH = os.path.join(_HERE, "skew_history.json")
 OUTPUT_PATH = os.path.join(_HERE, "skew_crosscheck_output.json")
 BLOCK_OUTPUT_PATH = os.path.join(_HERE, "skew_block_output.json")
 
-BYBIT_FUNDING_URL = "https://api.bybit.com/v5/market/funding/history"
-BYBIT_OI_URL = "https://api.bybit.com/v5/market/open-interest"
-BYBIT_LS_RATIO_URL = "https://api.bybit.com/v5/market/account-ratio"
-BYBIT_TICKERS_URL = "https://api.bybit.com/v5/market/tickers"
+# [ПАТЧ C1, 01.11.2026] хосты Bybit по порядку; пути отдельно.
+BYBIT_HOSTS = ["https://api.bybit.com", "https://api.bytick.com"]
+BYBIT_FUNDING_PATH = "/v5/market/funding/history"
+BYBIT_OI_PATH = "/v5/market/open-interest"
+BYBIT_LS_RATIO_PATH = "/v5/market/account-ratio"
+BYBIT_TICKERS_PATH = "/v5/market/tickers"
+# [ПРЕДЫДУЩЕЕ, до 01.11.2026] BYBIT_*_URL = "https://api.bybit.com/v5/market/..."
+#   — единственный хост, 403 с облачных IP GitHub.
+
+# [ПАТЧ C2, 01.11.2026] резерв MEXC. ⛔ Включается ТОЛЬКО решением Viktor (§2.8).
+ALLOW_MEXC_FALLBACK = True   # [РЕШЕНИЕ Viktor 01.11.2026: «да, включай»]
+MEXC_TICKER_URL = "https://contract.mexc.com/api/v1/contract/ticker"
+MEXC_SYMBOL = "BTC_USDT"
 
 SYMBOL = "BTCUSDT"
 
@@ -146,8 +178,10 @@ BLOCK_STALE_HOURS = 6
 
 
 def safe_get(url, params=None, timeout=15):
+    """Один запрос к Bybit. Возвращает result или None."""
     try:
-        r = requests.get(url, params=params, timeout=timeout)
+        r = requests.get(url, params=params, timeout=timeout,
+                         headers={"User-Agent": "jarvis-crosscheck/1.1"})
         r.raise_for_status()
         data = r.json()
         if data.get("retCode") != 0:
@@ -156,6 +190,33 @@ def safe_get(url, params=None, timeout=15):
         return data.get("result")
     except Exception as e:
         print(f"[WARN] fetch failed: {url} -> {e}")
+        return None
+
+
+def bybit_get(path, params):
+    """[ПАТЧ C1] Перебор хостов Bybit. Возвращает (result, host) или (None, None)."""
+    for host in BYBIT_HOSTS:
+        res = safe_get(host + path, params=params)
+        if res is not None:
+            return res, host
+    return None, None
+
+
+def mexc_ticker():
+    """[ПАТЧ C2] Тикер перпа MEXC: fundingRate (текущий, доля), fairPrice, indexPrice."""
+    if not ALLOW_MEXC_FALLBACK:
+        return None
+    try:
+        r = requests.get(MEXC_TICKER_URL, params={"symbol": MEXC_SYMBOL}, timeout=15,
+                         headers={"User-Agent": "jarvis-crosscheck/1.1"})
+        r.raise_for_status()
+        d = r.json()
+        if not d.get("success"):
+            print(f"[WARN] MEXC API error: {d.get('code')} {d.get('message')}")
+            return None
+        return d.get("data")
+    except Exception as e:
+        print(f"[WARN] fetch failed: {MEXC_TICKER_URL} -> {e}")
         return None
 
 
@@ -243,19 +304,29 @@ def compute_skew_zscore(history, lookback_days=BASELINE_WINDOW):
     }
 
 
+SOURCES = {}   # [ПАТЧ C3] провенанс ног: metric -> строка источника
+
+
 def get_funding_rate():
-    result = safe_get(BYBIT_FUNDING_URL, params={"category": "linear", "symbol": SYMBOL, "limit": 1})
-    if not result or not result.get("list"):
-        return None
-    rate = float(result["list"][0]["fundingRate"]) * 100  # в %
-    return rate
+    result, host = bybit_get(BYBIT_FUNDING_PATH, {"category": "linear", "symbol": SYMBOL, "limit": 1})
+    if result and result.get("list"):
+        SOURCES["funding"] = f"Bybit {host} — последний расчёт (settled)"
+        return float(result["list"][0]["fundingRate"]) * 100  # в %
+    t = mexc_ticker()
+    if t and t.get("fundingRate") is not None:
+        SOURCES["funding"] = "MEXC contract API — ТЕКУЩАЯ ставка (не settled), резерв C2"
+        return float(t["fundingRate"]) * 100
+    SOURCES["funding"] = NO_DATA
+    return None
 
 
 def get_ls_ratio_stability():
     """Возвращает (текущее значение, стабильно ли за последние N точек)."""
-    result = safe_get(BYBIT_LS_RATIO_URL, params={"category": "linear", "symbol": SYMBOL, "period": "5min", "limit": LS_RATIO_STABILITY_WINDOW})
+    result, host = bybit_get(BYBIT_LS_RATIO_PATH, {"category": "linear", "symbol": SYMBOL, "period": "5min", "limit": LS_RATIO_STABILITY_WINDOW})
     if not result or not result.get("list"):
+        SOURCES["ls_ratio"] = NO_DATA + " (резерва нет: у MEXC публичного L/S нет)"
         return None, None
+    SOURCES["ls_ratio"] = f"Bybit {host}"
 
     ratios = [float(pt["buyRatio"]) for pt in result["list"]]
     if len(ratios) < 2:
@@ -267,9 +338,16 @@ def get_ls_ratio_stability():
 
 
 def get_basis():
-    result = safe_get(BYBIT_TICKERS_URL, params={"category": "linear", "symbol": SYMBOL})
+    result, host = bybit_get(BYBIT_TICKERS_PATH, {"category": "linear", "symbol": SYMBOL})
     if not result or not result.get("list"):
+        t = mexc_ticker()
+        if t and t.get("fairPrice") and t.get("indexPrice"):
+            fp, ip = float(t["fairPrice"]), float(t["indexPrice"])
+            SOURCES["basis"] = "MEXC contract API — fairPrice vs indexPrice, резерв C2"
+            return fp - ip, (fp - ip) / ip * 100
+        SOURCES["basis"] = NO_DATA
         return None, None
+    SOURCES["basis"] = f"Bybit {host} — markPrice vs indexPrice"
 
     ticker = result["list"][0]
     mark_price = float(ticker.get("markPrice", 0))
@@ -441,6 +519,7 @@ def run(force_check=False):
         "ls_ratio_latest": ls_latest if ls_latest is not None else NO_DATA,
         "ls_ratio_stable": ls_stable if ls_stable is not None else NO_DATA,
         "basis_pct": round(basis_pct, 4) if basis_pct is not None else NO_DATA,
+        "sources": dict(SOURCES),
         "signals": [{"metric": m, "verdict": v, "detail": d} for m, v, d in signals],
         "overall_verdict": overall,
         "thresholds_uncalibrated": (
@@ -456,11 +535,33 @@ def run(force_check=False):
 
     print(json.dumps(result, indent=2, ensure_ascii=False))
     print(f"\nЗаписано в {OUTPUT_PATH}")
+
+    # [ПАТЧ C4] громкий сбой: кросс-чек был обязан работать и не получил ничего
+    if funding is None and ls_stable is None and basis_pct is None:
+        print("::error::Кросс-чек §10.3: НИ ОДНОЙ ноги не получено "
+              f"(источники: {SOURCES}). Вывод записан, точка skew цела.")
+        sys.exit(2)
     return result
+
+
+def probe():
+    """[ПАТЧ C5] Только диагностика доступа: HTTP-статус каждого источника."""
+    targets = [(h + BYBIT_TICKERS_PATH, {"category": "linear", "symbol": SYMBOL}) for h in BYBIT_HOSTS]
+    targets.append((MEXC_TICKER_URL, {"symbol": MEXC_SYMBOL}))
+    for url, params in targets:
+        try:
+            r = requests.get(url, params=params, timeout=15,
+                             headers={"User-Agent": "jarvis-crosscheck/1.1"})
+            print(f"[PROBE] {r.status_code}  {url}  {r.text[:120]!r}")
+        except Exception as e:
+            print(f"[PROBE] ERR  {url}  {e}")
 
 
 if __name__ == "__main__":
     # force_check=True прогоняет сразу, независимо от вердикта — удобно для
     # ручной проверки. В проде (cron/Routine) держать False: кросс-чек
     # запускается по вердикту skew_block (escalate=True либо CRITICAL).
-    run(force_check=False)
+    if "--probe" in sys.argv:
+        probe()
+    else:
+        run(force_check=False)
