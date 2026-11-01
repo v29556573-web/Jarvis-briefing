@@ -51,7 +51,8 @@ jobs:
           git config user.email "actions@github.com"
           git add -A -- skew_history.json skew_crosscheck_output.json \
                         skew_intraday.json skew_block_output.json \
-                        skew_verdict_history.json
+                        skew_verdict_history.json \
+                        crosscheck_funding_history.json
           git diff --staged --quiet || git commit -m "Daily skew history point"
           git pull --rebase origin main
           git push

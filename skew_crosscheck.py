@@ -138,6 +138,24 @@ HARD RULE: при сбое запроса — "ДАННЫЕ НЕ ПОЛУЧЕН�
       (история для PR-18).
   Порог basis 0.5% не менялся (§12 №35 — открыт).
 
+=====================================================================
+[АКТ Viktor 01.11.2026 (2) — rule_version crosscheck-v1.3]
+=====================================================================
+  E1. Асимметрия фандинга подтверждена Viktor: d ≤ −0.005% ×3 -> НЕ ЗАЧТЕНО
+      с пометкой «временно, до калибровки §10.2» (цена: настоящий
+      отрицательный фандинг не голосует). Сырые d пишутся в
+      crosscheck_funding_history.json КАЖДЫЙ день (и без пробоя).
+  E2. БАЗИС -> НЕ ЗАЧТЕНО: порог 0.5% вычеркнут в §10.5 (§12 №35) —
+      два порога на одном поле = [UNRECONCILED], нога не голосует.
+      Значение пишется как описание.
+  E3. voting_legs в выводе. Итог при < 2 голосующих ногах:
+      «НЕДОСТАТОЧНО НОГ» — отсутствие тревоги, НЕ подтверждение;
+      в R3′ и PR-18 как подтверждение не читается.
+
+  v1.4 [Viktor 01.11, C.1–C.4]: кламп не голосует; одна нога «выше клампа» —
+  «тревога с пометкой», не AMBIGUOUS; красный шаг — только при отсутствии
+  данных у активной ноги (funding/basis), не при отсутствии голосов.
+
 Запуск:
   pip install requests --break-system-packages
   python3 skew_crosscheck.py
@@ -193,12 +211,16 @@ BASELINE_WINDOW = 14      # канон [РЕШЕНИЕ VIKTOR 15.08.2026]
 
 # [ПРЕДЫДУЩЕЕ, до 01.11.2026] FUNDING_FLAT_THRESHOLD = 0.01 (% за 8ч, по сырому |funding|).
 # В расчёте НЕ УЧАСТВУЕТ. Заменён актом D1:
-RULE_VERSION = "crosscheck-v1.2-2026-11-01"
+RULE_VERSION = "crosscheck-v1.4-2026-11-01"
+# [ПРЕДЫДУЩЕЕ] crosscheck-v1.3-2026-11-01 (кламп голосовал «норма»; одна нога → AMBIGUOUS)
+# [ПРЕДЫДУЩЕЕ] crosscheck-v1.2-2026-11-01 (базис голосовал; итог без счёта ног)
 FUNDING_BASE = 0.01               # % за 8ч — кламп/ноль §10.2
 FUNDING_DEAD_ZONE_D = 0.005       # |d| < этого -> нейтрально (§10.2, по d — акт 01.11)
 FUNDING_SETTLEMENTS = 3           # персистентность §10.2
 NOT_COUNTED = "НЕ ЗАЧТЕНО"
 LS_DISABLED = "ОТКЛЮЧЕНО"
+FUNDING_HISTORY_PATH = os.path.join(_HERE, "crosscheck_funding_history.json")
+MIN_VOTING_LEGS = 2
 LS_RATIO_STABILITY_WINDOW = 5     # последних точек для оценки стабильности
 
 # [ПАТЧ B4] Порог устаревания skew_block_output.json, часов.
@@ -335,12 +357,23 @@ def compute_skew_zscore(history, lookback_days=BASELINE_WINDOW):
 SOURCES = {}   # [ПАТЧ C3] провенанс ног: metric -> строка источника
 
 
+SETTLE_TIMES = []   # [ревью 01.11 п.7] время расчётов (UTC мс), от нового к старому
+
+
 def get_funding_settlements(n=FUNDING_SETTLEMENTS):
-    """[АКТ D1] Последние n РАСЧЁТОВ фандинга, в %, от нового к старому."""
+    """[АКТ D1] Последние n РАСЧЁТОВ фандинга, в %, от нового к старому.
+    [ревью 01.11 п.9] Bybit — явная сортировка по времени и защита от кривого ответа."""
+    del SETTLE_TIMES[:]
     result, host = bybit_get(BYBIT_FUNDING_PATH, {"category": "linear", "symbol": SYMBOL, "limit": n})
-    if result and len(result.get("list") or []) >= n:
-        SOURCES["funding"] = f"Bybit {host} — {n} последних расчётов"
-        return [float(x["fundingRate"]) * 100 for x in result["list"][:n]]
+    try:
+        if result and len(result.get("list") or []) >= n:
+            lst = sorted(result["list"], key=lambda x: int(x["fundingRateTimestamp"]), reverse=True)[:n]
+            vals = [float(x["fundingRate"]) * 100 for x in lst]
+            SETTLE_TIMES.extend(int(x["fundingRateTimestamp"]) for x in lst)
+            SOURCES["funding"] = f"Bybit {host} — {n} последних расчётов"
+            return vals
+    except Exception as e:
+        print(f"[WARN] Bybit funding: неожиданный формат ответа -> {e}")
     if ALLOW_MEXC_FALLBACK:
         try:
             r = requests.get(MEXC_FUNDING_HISTORY_URL,
@@ -351,8 +384,10 @@ def get_funding_settlements(n=FUNDING_SETTLEMENTS):
             lst = ((d.get("data") or {}).get("resultList") or []) if d.get("success") else []
             if len(lst) >= n:
                 lst = sorted(lst, key=lambda x: x["settleTime"], reverse=True)[:n]
+                vals = [float(x["fundingRate"]) * 100 for x in lst]
+                SETTLE_TIMES.extend(int(x["settleTime"]) for x in lst)
                 SOURCES["funding"] = "MEXC contract API — " + f"{n} последних расчётов (settled), резерв C2"
-                return [float(x["fundingRate"]) * 100 for x in lst]
+                return vals
         except Exception as e:
             print(f"[WARN] fetch failed: {MEXC_FUNDING_HISTORY_URL} -> {e}")
     SOURCES["funding"] = NO_DATA
@@ -363,16 +398,19 @@ def classify_funding(settled):
     """[АКТ D1] Возвращает (verdict, detail) по d = f − 0.01%, 3 расчёта."""
     if not settled:
         return NO_DATA, NO_DATA
-    ds = [f - FUNDING_BASE for f in settled]
+    ds = [round(f - FUNDING_BASE, 8) for f in settled]   # [ревью 01.11 п.4] округление на границе 0.005
     txt = ", ".join(f"{f:.4f}% (d {d:+.4f})" for f, d in zip(settled, ds))
+    # [Viktor 01.11 C.1] мёртвая зона (кламп) НЕ голосует: d ≤ 0 не нога сходимости (§10.2)
     if all(abs(d) < FUNDING_DEAD_ZONE_D for d in ds):
-        return "benign", f"3 расчёта в мёртвой зоне |d|<{FUNDING_DEAD_ZONE_D}%: {txt}"
+        return NOT_COUNTED, f"3 расчёта в мёртвой зоне |d|<{FUNDING_DEAD_ZONE_D}% (кламп) — не голосует [C.1]: {txt}"
+    # [Viktor 01.11 C.3] тревога с пометкой: порог +0.005% не откалиброван
     if all(d >= FUNDING_DEAD_ZONE_D for d in ds):
-        return "diverging", f"3 расчёта подряд выше зоны, перегретые лонги: {txt}"
+        return "diverging", f"ВЫШЕ КЛАМПА 3 расчёта подряд (порог +{FUNDING_DEAD_ZONE_D}% не откалиброван): {txt}"
     if all(d <= -FUNDING_DEAD_ZONE_D for d in ds):
-        # §10.2 [RATIFIED 10.08]: d ≤ 0 — состояние по умолчанию (97.42%),
-        # НЕ направленный сигнал и не нога сходимости -> не голосует.
-        return NOT_COUNTED, f"d < 0 три расчёта — не направленный сигнал по §10.2 (10.08): {txt}"
+        # Не голосует ВРЕМЕННО, до калибровки §10.2 [акт 01.11] — осторожная мера.
+        # [Viktor 01.11 C.2] цифра §10.2 «97.42%» посчитана как F − 0.03% (суточная ставка
+        # вычтена из 8-часового фандинга — смешение единиц); обоснование — в очередь Manual.
+        return NOT_COUNTED, f"d < 0 три расчёта — не голосует ВРЕМЕННО, до калибровки §10.2 [акт 01.11]: {txt}"
     return NOT_COUNTED, f"персистентность не выполнена (§10.2): {txt}"
 
 
@@ -454,11 +492,10 @@ def classify_convergence(funding, ls_stable, basis_pct, funding_settled=None):
     else:
         signals.append(("ls_ratio", NO_DATA, NO_DATA))
 
+    # [АКТ E2, 01.11.2026] базис не голосует: порог 0.5% вычеркнут в §10.5 (§12 №35)
     if basis_pct is not None:
-        if abs(basis_pct) < 0.5:
-            signals.append(("basis", "benign", f"{basis_pct:.3f}% — норма"))
-        else:
-            signals.append(("basis", "diverging", f"{basis_pct:.3f}% — широкий разрыв, межрыночный стресс"))
+        signals.append(("basis", NOT_COUNTED,
+                        f"{basis_pct:.3f}% — описание; порог 0.5% вычеркнут (§10.5, §12 №35) — [UNRECONCILED], нога не голосует"))
     else:
         signals.append(("basis", NO_DATA, NO_DATA))
 
@@ -466,17 +503,58 @@ def classify_convergence(funding, ls_stable, basis_pct, funding_settled=None):
     diverging_count = sum(1 for _, verdict, _ in signals if verdict == "diverging")
     no_data_count = sum(1 for _, verdict, _ in signals if verdict == NO_DATA)
     active = sum(1 for _, verdict, _ in signals if verdict != LS_DISABLED)
+    voting = benign_count + diverging_count
+    # [ревью 01.11 п.10] знаменатель фактический (§10.6): только ноги, способные голосовать
+    capable = sum(1 for m, v, _ in signals if v != LS_DISABLED and m != "basis")
 
-    if diverging_count > 0:
+    if diverging_count > 0 and voting < MIN_VOTING_LEGS:
+        # [Viktor 01.11 C.3] одна нога — не полноценный конфликт
+        overall = (f"ТРЕВОГА С ПОМЕТКОЙ — фандинг выше клампа 3 расчёта подряд, "
+                   f"голосует {voting} из {capable}; порог не откалиброван, не AMBIGUOUS")
+    elif diverging_count > 0:
         overall = "AMBIGUOUS — минимум одна метрика расходится, ждать подтверждения ценой (CHoCH/BOS)"
     elif no_data_count == active:
         overall = NO_DATA
+    elif voting < MIN_VOTING_LEGS:
+        overall = (f"НЕДОСТАТОЧНО НОГ — голосует {voting} из {capable}; отсутствие тревоги, "
+                   f"НЕ подтверждение (в R3′ и PR-18 не читается как подтверждение)")
     elif benign_count >= 2:
         overall = "LEANS BENIGN/BULLISH — метрики согласованы, склоняется к accumulation/hedge-unwind, не к vol crush"
     else:
         overall = "INCONCLUSIVE — недостаточно данных для уверенного вывода"
 
-    return signals, overall
+    return signals, overall, f"{voting} из {capable} (L/S отключена; базис не голосует)"
+
+
+def record_funding_history():
+    """[АКТ E1] Ежедневная запись сырых d (append-only, по времени расчёта)."""
+    settled = get_funding_settlements()
+    try:
+        hist = json.load(open(FUNDING_HISTORY_PATH)) if os.path.exists(FUNDING_HISTORY_PATH) else []
+        if not isinstance(hist, list):
+            raise ValueError("ожидался список")
+    except Exception as e:
+        # [ревью 01.11 п.6] испорченную историю НЕ обнуляем — громко, без перезаписи
+        print(f"::error::crosscheck_funding_history.json не читается ({e}) — запись дня пропущена, файл не тронут")
+        return settled
+    if not settled:
+        # [ревью 01.11 п.8] пропуск дня виден в истории
+        hist.append({"recorded_utc": datetime.now(timezone.utc).isoformat(),
+                     "source": NO_DATA, "rule_version": RULE_VERSION})
+        with open(FUNDING_HISTORY_PATH, "w") as f:
+            json.dump(hist, f, indent=1, ensure_ascii=False)
+        return None
+    hist.append({
+        "recorded_utc": datetime.now(timezone.utc).isoformat(),
+        "settle_time_utc_ms": list(SETTLE_TIMES),
+        "source": SOURCES.get("funding"),
+        "settled_pct_newest_first": settled,
+        "d_pct": [round(f - FUNDING_BASE, 6) for f in settled],
+        "rule_version": RULE_VERSION,
+    })
+    with open(FUNDING_HISTORY_PATH, "w") as f:
+        json.dump(hist, f, indent=1, ensure_ascii=False)
+    return settled
 
 
 def resolve_gate(block, z, force_check):
@@ -507,7 +585,9 @@ def resolve_gate(block, z, force_check):
             reason = "ОТКАТ (нет skew_block_output.json): собственный z ниже порога"
     elif escalate:
         breach, reason = True, f"escalate=True, вердикт {verdict}"
-    elif verdict and str(verdict).startswith("CRITICAL"):
+    elif verdict and str(verdict).startswith(("CRITICAL", "SIGNAL")):
+        # [ревью 01.11 п.3] гейт §10.3 [RATIFIED 18.09]: escalate ∨ CRITICAL_* ∨ SIGNAL_*
+        # (в коде с 18.09 не был обновлён). SIGNAL — верификация, не тревога.
         breach, reason = True, f"вердикт {verdict}"
     else:
         breach, reason = False, f"вердикт {verdict or NO_DATA} — кросс-чек не требуется"
@@ -563,6 +643,9 @@ def run(force_check=False):
         } if zdata else NO_DATA,
     }
 
+    # [АКТ E1] сырые d — каждый день, независимо от пробоя
+    daily_settled = record_funding_history()
+
     if not breach:
         # [ПАТЧ B3, 13.09.2026] Строка печатала «Skew в пределах нормы»
         # при ЛЮБОМ breach=False, включая вердикт DIVERGENT (12.09 — так
@@ -579,13 +662,13 @@ def run(force_check=False):
         return result
 
     # [АКТ 01.11.2026] фандинг — 3 расчёта; L/S отключена; basis без изменений
-    funding_settled = get_funding_settlements()
+    funding_settled = daily_settled
     funding = funding_settled[0] if funding_settled else None
     ls_latest, ls_stable = None, LS_DISABLED
     SOURCES["ls_ratio"] = LS_DISABLED + " (акт 01.11.2026)"
     basis_abs, basis_pct = get_basis()
 
-    signals, overall = classify_convergence(funding, ls_stable, basis_pct, funding_settled)
+    signals, overall, voting = classify_convergence(funding, ls_stable, basis_pct, funding_settled)
 
     result["crosscheck"] = {
         "funding_rate_pct_8h": funding if funding is not None else NO_DATA,
@@ -595,12 +678,12 @@ def run(force_check=False):
         "ls_ratio_stable": LS_DISABLED,
         "basis_pct": round(basis_pct, 4) if basis_pct is not None else NO_DATA,
         "sources": dict(SOURCES),
+        "voting_legs": voting,
         "signals": [{"metric": m, "verdict": v, "detail": d} for m, v, d in signals],
         "overall_verdict": overall,
         "thresholds_uncalibrated": (
-            "funding: d = f − 0.01%, |d| < 0.005%, 3 расчёта (§10.2, акт 01.11; калибровка §10.2 не завершена); "
-            "basis 0.5% — нога вычеркнута из §10.5 по §12 №35 (отрицателен "
-            "99.00% дней), порог кабинетный; L/S отключена (акт 01.11)."
+            "funding: d = f − 0.01%, |d| < 0.005%, 3 расчёта; d<0 не голосует ВРЕМЕННО (§10.2, акт 01.11; калибровка не завершена); "
+            "basis — описание, не голосует ([UNRECONCILED], §10.5/§12 №35); L/S отключена (акт 01.11)."
         ),
         "not_automated": "CME vs aggregate exchange OI divergence — Coinglass per-exchange breakdown is JS-rendered, requires manual check at coinglass.com/ru/open-interest/BTC",
     }
@@ -612,8 +695,11 @@ def run(force_check=False):
     print(f"\nЗаписано в {OUTPUT_PATH}")
 
     # [ПАТЧ C4] громкий сбой: кросс-чек был обязан работать и не получил ничего
-    if funding is None and basis_pct is None:
-        print("::error::Кросс-чек §10.3: НИ ОДНОЙ ноги не получено "
+    # [Viktor 01.11 C.4] красный — когда у активной ноги НЕТ ДАННЫХ (источник не ответил);
+    # данные есть, но нога не голосует — зелёный, итог «недостаточно ног».
+    missing = [m for m, v in (("funding", funding), ("basis", basis_pct)) if v is None]
+    if missing:
+        print(f"::error::Кросс-чек §10.3: нет данных по ногам {missing} "
               f"(источники: {SOURCES}). Вывод записан, точка skew цела.")
         sys.exit(2)
     return result
