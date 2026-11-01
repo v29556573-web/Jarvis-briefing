@@ -152,6 +152,10 @@ HARD RULE: при сбое запроса — "ДАННЫЕ НЕ ПОЛУЧЕН�
       «НЕДОСТАТОЧНО НОГ» — отсутствие тревоги, НЕ подтверждение;
       в R3′ и PR-18 как подтверждение не читается.
 
+  v1.4 [Viktor 01.11, C.1–C.4]: кламп не голосует; одна нога «выше клампа» —
+  «тревога с пометкой», не AMBIGUOUS; красный шаг — только при отсутствии
+  данных у активной ноги (funding/basis), не при отсутствии голосов.
+
 Запуск:
   pip install requests --break-system-packages
   python3 skew_crosscheck.py
@@ -207,7 +211,8 @@ BASELINE_WINDOW = 14      # канон [РЕШЕНИЕ VIKTOR 15.08.2026]
 
 # [ПРЕДЫДУЩЕЕ, до 01.11.2026] FUNDING_FLAT_THRESHOLD = 0.01 (% за 8ч, по сырому |funding|).
 # В расчёте НЕ УЧАСТВУЕТ. Заменён актом D1:
-RULE_VERSION = "crosscheck-v1.3-2026-11-01"
+RULE_VERSION = "crosscheck-v1.4-2026-11-01"
+# [ПРЕДЫДУЩЕЕ] crosscheck-v1.3-2026-11-01 (кламп голосовал «норма»; одна нога → AMBIGUOUS)
 # [ПРЕДЫДУЩЕЕ] crosscheck-v1.2-2026-11-01 (базис голосовал; итог без счёта ног)
 FUNDING_BASE = 0.01               # % за 8ч — кламп/ноль §10.2
 FUNDING_DEAD_ZONE_D = 0.005       # |d| < этого -> нейтрально (§10.2, по d — акт 01.11)
@@ -395,14 +400,16 @@ def classify_funding(settled):
         return NO_DATA, NO_DATA
     ds = [round(f - FUNDING_BASE, 8) for f in settled]   # [ревью 01.11 п.4] округление на границе 0.005
     txt = ", ".join(f"{f:.4f}% (d {d:+.4f})" for f, d in zip(settled, ds))
+    # [Viktor 01.11 C.1] мёртвая зона (кламп) НЕ голосует: d ≤ 0 не нога сходимости (§10.2)
     if all(abs(d) < FUNDING_DEAD_ZONE_D for d in ds):
-        return "benign", f"3 расчёта в мёртвой зоне |d|<{FUNDING_DEAD_ZONE_D}%: {txt}"
+        return NOT_COUNTED, f"3 расчёта в мёртвой зоне |d|<{FUNDING_DEAD_ZONE_D}% (кламп) — не голосует [C.1]: {txt}"
+    # [Viktor 01.11 C.3] тревога с пометкой: порог +0.005% не откалиброван
     if all(d >= FUNDING_DEAD_ZONE_D for d in ds):
-        return "diverging", f"3 расчёта подряд выше зоны, перегретые лонги: {txt}"
+        return "diverging", f"ВЫШЕ КЛАМПА 3 расчёта подряд (порог +{FUNDING_DEAD_ZONE_D}% не откалиброван): {txt}"
     if all(d <= -FUNDING_DEAD_ZONE_D for d in ds):
-        # Не голосует ВРЕМЕННО, до калибровки §10.2 [акт 01.11].
-        # ⚠ [ревью 01.11 C.2] цифра §10.2 «97.42%» посчитана для F − 0.03%, к d = F − 0.01%
-        # неприменима; обоснование асимметрии — на решение Viktor.
+        # Не голосует ВРЕМЕННО, до калибровки §10.2 [акт 01.11] — осторожная мера.
+        # [Viktor 01.11 C.2] цифра §10.2 «97.42%» посчитана как F − 0.03% (суточная ставка
+        # вычтена из 8-часового фандинга — смешение единиц); обоснование — в очередь Manual.
         return NOT_COUNTED, f"d < 0 три расчёта — не голосует ВРЕМЕННО, до калибровки §10.2 [акт 01.11]: {txt}"
     return NOT_COUNTED, f"персистентность не выполнена (§10.2): {txt}"
 
@@ -500,7 +507,11 @@ def classify_convergence(funding, ls_stable, basis_pct, funding_settled=None):
     # [ревью 01.11 п.10] знаменатель фактический (§10.6): только ноги, способные голосовать
     capable = sum(1 for m, v, _ in signals if v != LS_DISABLED and m != "basis")
 
-    if diverging_count > 0:
+    if diverging_count > 0 and voting < MIN_VOTING_LEGS:
+        # [Viktor 01.11 C.3] одна нога — не полноценный конфликт
+        overall = (f"ТРЕВОГА С ПОМЕТКОЙ — фандинг выше клампа 3 расчёта подряд, "
+                   f"голосует {voting} из {capable}; порог не откалиброван, не AMBIGUOUS")
+    elif diverging_count > 0:
         overall = "AMBIGUOUS — минимум одна метрика расходится, ждать подтверждения ценой (CHoCH/BOS)"
     elif no_data_count == active:
         overall = NO_DATA
@@ -684,8 +695,11 @@ def run(force_check=False):
     print(f"\nЗаписано в {OUTPUT_PATH}")
 
     # [ПАТЧ C4] громкий сбой: кросс-чек был обязан работать и не получил ничего
-    if funding is None and basis_pct is None:
-        print("::error::Кросс-чек §10.3: НИ ОДНОЙ ноги не получено "
+    # [Viktor 01.11 C.4] красный — когда у активной ноги НЕТ ДАННЫХ (источник не ответил);
+    # данные есть, но нога не голосует — зелёный, итог «недостаточно ног».
+    missing = [m for m, v in (("funding", funding), ("basis", basis_pct)) if v is None]
+    if missing:
+        print(f"::error::Кросс-чек §10.3: нет данных по ногам {missing} "
               f"(источники: {SOURCES}). Вывод записан, точка skew цела.")
         sys.exit(2)
     return result
