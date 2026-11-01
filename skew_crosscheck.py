@@ -138,6 +138,20 @@ HARD RULE: при сбое запроса — "ДАННЫЕ НЕ ПОЛУЧЕН�
       (история для PR-18).
   Порог basis 0.5% не менялся (§12 №35 — открыт).
 
+=====================================================================
+[АКТ Viktor 01.11.2026 (2) — rule_version crosscheck-v1.3]
+=====================================================================
+  E1. Асимметрия фандинга подтверждена Viktor: d ≤ −0.005% ×3 -> НЕ ЗАЧТЕНО
+      с пометкой «временно, до калибровки §10.2» (цена: настоящий
+      отрицательный фандинг не голосует). Сырые d пишутся в
+      crosscheck_funding_history.json КАЖДЫЙ день (и без пробоя).
+  E2. БАЗИС -> НЕ ЗАЧТЕНО: порог 0.5% вычеркнут в §10.5 (§12 №35) —
+      два порога на одном поле = [UNRECONCILED], нога не голосует.
+      Значение пишется как описание.
+  E3. voting_legs в выводе. Итог при < 2 голосующих ногах:
+      «НЕДОСТАТОЧНО НОГ» — отсутствие тревоги, НЕ подтверждение;
+      в R3′ и PR-18 как подтверждение не читается.
+
 Запуск:
   pip install requests --break-system-packages
   python3 skew_crosscheck.py
@@ -193,12 +207,15 @@ BASELINE_WINDOW = 14      # канон [РЕШЕНИЕ VIKTOR 15.08.2026]
 
 # [ПРЕДЫДУЩЕЕ, до 01.11.2026] FUNDING_FLAT_THRESHOLD = 0.01 (% за 8ч, по сырому |funding|).
 # В расчёте НЕ УЧАСТВУЕТ. Заменён актом D1:
-RULE_VERSION = "crosscheck-v1.2-2026-11-01"
+RULE_VERSION = "crosscheck-v1.3-2026-11-01"
+# [ПРЕДЫДУЩЕЕ] crosscheck-v1.2-2026-11-01 (базис голосовал; итог без счёта ног)
 FUNDING_BASE = 0.01               # % за 8ч — кламп/ноль §10.2
 FUNDING_DEAD_ZONE_D = 0.005       # |d| < этого -> нейтрально (§10.2, по d — акт 01.11)
 FUNDING_SETTLEMENTS = 3           # персистентность §10.2
 NOT_COUNTED = "НЕ ЗАЧТЕНО"
 LS_DISABLED = "ОТКЛЮЧЕНО"
+FUNDING_HISTORY_PATH = os.path.join(_HERE, "crosscheck_funding_history.json")
+MIN_VOTING_LEGS = 2
 LS_RATIO_STABILITY_WINDOW = 5     # последних точек для оценки стабильности
 
 # [ПАТЧ B4] Порог устаревания skew_block_output.json, часов.
@@ -372,7 +389,7 @@ def classify_funding(settled):
     if all(d <= -FUNDING_DEAD_ZONE_D for d in ds):
         # §10.2 [RATIFIED 10.08]: d ≤ 0 — состояние по умолчанию (97.42%),
         # НЕ направленный сигнал и не нога сходимости -> не голосует.
-        return NOT_COUNTED, f"d < 0 три расчёта — не направленный сигнал по §10.2 (10.08): {txt}"
+        return NOT_COUNTED, f"d < 0 три расчёта — не направленный сигнал по §10.2 (10.08); ВРЕМЕННО, до калибровки §10.2 [акт 01.11]: {txt}"
     return NOT_COUNTED, f"персистентность не выполнена (§10.2): {txt}"
 
 
@@ -454,11 +471,10 @@ def classify_convergence(funding, ls_stable, basis_pct, funding_settled=None):
     else:
         signals.append(("ls_ratio", NO_DATA, NO_DATA))
 
+    # [АКТ E2, 01.11.2026] базис не голосует: порог 0.5% вычеркнут в §10.5 (§12 №35)
     if basis_pct is not None:
-        if abs(basis_pct) < 0.5:
-            signals.append(("basis", "benign", f"{basis_pct:.3f}% — норма"))
-        else:
-            signals.append(("basis", "diverging", f"{basis_pct:.3f}% — широкий разрыв, межрыночный стресс"))
+        signals.append(("basis", NOT_COUNTED,
+                        f"{basis_pct:.3f}% — описание; порог 0.5% вычеркнут (§10.5, §12 №35) — [UNRECONCILED], нога не голосует"))
     else:
         signals.append(("basis", NO_DATA, NO_DATA))
 
@@ -466,17 +482,42 @@ def classify_convergence(funding, ls_stable, basis_pct, funding_settled=None):
     diverging_count = sum(1 for _, verdict, _ in signals if verdict == "diverging")
     no_data_count = sum(1 for _, verdict, _ in signals if verdict == NO_DATA)
     active = sum(1 for _, verdict, _ in signals if verdict != LS_DISABLED)
+    voting = benign_count + diverging_count
 
     if diverging_count > 0:
         overall = "AMBIGUOUS — минимум одна метрика расходится, ждать подтверждения ценой (CHoCH/BOS)"
     elif no_data_count == active:
         overall = NO_DATA
+    elif voting < MIN_VOTING_LEGS:
+        overall = (f"НЕДОСТАТОЧНО НОГ — голосует {voting} из 3; отсутствие тревоги, "
+                   f"НЕ подтверждение (в R3′ и PR-18 не читается как подтверждение)")
     elif benign_count >= 2:
         overall = "LEANS BENIGN/BULLISH — метрики согласованы, склоняется к accumulation/hedge-unwind, не к vol crush"
     else:
         overall = "INCONCLUSIVE — недостаточно данных для уверенного вывода"
 
-    return signals, overall
+    return signals, overall, voting
+
+
+def record_funding_history():
+    """[АКТ E1] Ежедневная запись сырых d (append-only, по времени расчёта)."""
+    settled = get_funding_settlements()
+    if not settled:
+        return None
+    try:
+        hist = json.load(open(FUNDING_HISTORY_PATH)) if os.path.exists(FUNDING_HISTORY_PATH) else []
+    except Exception:
+        hist = []
+    hist.append({
+        "recorded_utc": datetime.now(timezone.utc).isoformat(),
+        "source": SOURCES.get("funding"),
+        "settled_pct_newest_first": settled,
+        "d_pct": [round(f - FUNDING_BASE, 6) for f in settled],
+        "rule_version": RULE_VERSION,
+    })
+    with open(FUNDING_HISTORY_PATH, "w") as f:
+        json.dump(hist, f, indent=1, ensure_ascii=False)
+    return settled
 
 
 def resolve_gate(block, z, force_check):
@@ -563,6 +604,9 @@ def run(force_check=False):
         } if zdata else NO_DATA,
     }
 
+    # [АКТ E1] сырые d — каждый день, независимо от пробоя
+    daily_settled = record_funding_history()
+
     if not breach:
         # [ПАТЧ B3, 13.09.2026] Строка печатала «Skew в пределах нормы»
         # при ЛЮБОМ breach=False, включая вердикт DIVERGENT (12.09 — так
@@ -579,13 +623,13 @@ def run(force_check=False):
         return result
 
     # [АКТ 01.11.2026] фандинг — 3 расчёта; L/S отключена; basis без изменений
-    funding_settled = get_funding_settlements()
+    funding_settled = daily_settled
     funding = funding_settled[0] if funding_settled else None
     ls_latest, ls_stable = None, LS_DISABLED
     SOURCES["ls_ratio"] = LS_DISABLED + " (акт 01.11.2026)"
     basis_abs, basis_pct = get_basis()
 
-    signals, overall = classify_convergence(funding, ls_stable, basis_pct, funding_settled)
+    signals, overall, voting = classify_convergence(funding, ls_stable, basis_pct, funding_settled)
 
     result["crosscheck"] = {
         "funding_rate_pct_8h": funding if funding is not None else NO_DATA,
@@ -595,12 +639,12 @@ def run(force_check=False):
         "ls_ratio_stable": LS_DISABLED,
         "basis_pct": round(basis_pct, 4) if basis_pct is not None else NO_DATA,
         "sources": dict(SOURCES),
+        "voting_legs": f"{voting} из 3",
         "signals": [{"metric": m, "verdict": v, "detail": d} for m, v, d in signals],
         "overall_verdict": overall,
         "thresholds_uncalibrated": (
-            "funding: d = f − 0.01%, |d| < 0.005%, 3 расчёта (§10.2, акт 01.11; калибровка §10.2 не завершена); "
-            "basis 0.5% — нога вычеркнута из §10.5 по §12 №35 (отрицателен "
-            "99.00% дней), порог кабинетный; L/S отключена (акт 01.11)."
+            "funding: d = f − 0.01%, |d| < 0.005%, 3 расчёта; d<0 не голосует ВРЕМЕННО (§10.2, акт 01.11; калибровка не завершена); "
+            "basis — описание, не голосует ([UNRECONCILED], §10.5/§12 №35); L/S отключена (акт 01.11)."
         ),
         "not_automated": "CME vs aggregate exchange OI divergence — Coinglass per-exchange breakdown is JS-rendered, requires manual check at coinglass.com/ru/open-interest/BTC",
     }
