@@ -218,5 +218,25 @@
    -0.0021
   ],
   "rule_version": "crosscheck-v1.4-2026-11-01"
+ },
+ {
+  "recorded_utc": "2026-11-13T07:15:39.864081+00:00",
+  "settle_time_utc_ms": [
+   1794528000000,
+   1794499200000,
+   1794470400000
+  ],
+  "source": "MEXC contract API — 3 последних расчётов (settled), резерв C2",
+  "settled_pct_newest_first": [
+   0.01,
+   0.0088,
+   0.006200000000000001
+  ],
+  "d_pct": [
+   0.0,
+   -0.0012,
+   -0.0038
+  ],
+  "rule_version": "crosscheck-v1.4-2026-11-01"
  }
 ]
