@@ -1,9 +1,9 @@
 {
-  "timestamp_utc": "2026-11-13T07:15:39.081149+00:00",
-  "skew_latest": 4.359999999999999,
-  "skew_trailing_mean_14d": 4.158,
-  "skew_trailing_std_14d": 1.1544,
-  "skew_zscore": 0.1751,
+  "timestamp_utc": "2026-11-14T07:15:38.474130+00:00",
+  "skew_latest": 5.599999999999994,
+  "skew_trailing_mean_14d": 4.297,
+  "skew_trailing_std_14d": 1.0392,
+  "skew_zscore": 1.2537,
   "std_divisor": "n-1",
   "thresholds": {
     "critical": 2.231351,
@@ -11,22 +11,63 @@
   },
   "formula_version": "v2-corrected-2026-09-13",
   "rule_version": "crosscheck-v1.4-2026-11-01",
-  "critical_breach": false,
+  "critical_breach": true,
   "gate": {
     "source": "skew_block_output.json",
-    "block_verdict": "NORMAL",
+    "block_verdict": "SIGNAL_PUT_PREMIUM",
     "block_escalate": false,
-    "block_generated_at_utc": "2026-11-13T07:15:38Z",
+    "block_generated_at_utc": "2026-11-14T07:15:38Z",
     "block_age_hours": 0.0,
     "block_stale": false,
-    "reason": "вердикт NORMAL — кросс-чек не требуется"
+    "reason": "вердикт SIGNAL_PUT_PREMIUM"
   },
   "baseline": {
     "window": 14,
-    "start": "2026-10-30",
-    "end": "2026-11-12",
+    "start": "2026-10-31",
+    "end": "2026-11-13",
     "includes_current": false,
-    "latest_date": "2026-11-13"
+    "latest_date": "2026-11-14"
   },
-  "note": "Кросс-чек не запускался. Вердикт skew_block: NORMAL (escalate=False). Причина: вердикт NORMAL — кросс-чек не требуется. Ручной прогон: force_check=True."
+  "crosscheck": {
+    "funding_rate_pct_8h": 0.0059,
+    "funding_settled_pct": [
+      0.0059,
+      0.0038000000000000004,
+      0.0013
+    ],
+    "funding_d_pct": [
+      -0.0041,
+      -0.0062,
+      -0.0087
+    ],
+    "ls_ratio_latest": "ОТКЛЮЧЕНО",
+    "ls_ratio_stable": "ОТКЛЮЧЕНО",
+    "basis_pct": -0.0408,
+    "sources": {
+      "funding": "MEXC contract API — 3 последних расчётов (settled), резерв C2",
+      "ls_ratio": "ОТКЛЮЧЕНО (акт 01.11.2026)",
+      "basis": "MEXC contract API — fairPrice vs indexPrice, резерв C2"
+    },
+    "voting_legs": "0 из 1 (L/S отключена; базис не голосует)",
+    "signals": [
+      {
+        "metric": "funding",
+        "verdict": "НЕ ЗАЧТЕНО",
+        "detail": "персистентность не выполнена (§10.2): 0.0059% (d -0.0041), 0.0038% (d -0.0062), 0.0013% (d -0.0087)"
+      },
+      {
+        "metric": "ls_ratio",
+        "verdict": "ОТКЛЮЧЕНО",
+        "detail": "нога отключена до калибровки [акт Viktor 01.11.2026]"
+      },
+      {
+        "metric": "basis",
+        "verdict": "НЕ ЗАЧТЕНО",
+        "detail": "-0.041% — описание; порог 0.5% вычеркнут (§10.5, §12 №35) — [UNRECONCILED], нога не голосует"
+      }
+    ],
+    "overall_verdict": "НЕДОСТАТОЧНО НОГ — голосует 0 из 1; отсутствие тревоги, НЕ подтверждение (в R3′ и PR-18 не читается как подтверждение)",
+    "thresholds_uncalibrated": "funding: d = f − 0.01%, |d| < 0.005%, 3 расчёта; d<0 не голосует ВРЕМЕННО (§10.2, акт 01.11; калибровка не завершена); basis — описание, не голосует ([UNRECONCILED], §10.5/§12 №35); L/S отключена (акт 01.11).",
+    "not_automated": "CME vs aggregate exchange OI divergence — Coinglass per-exchange breakdown is JS-rendered, requires manual check at coinglass.com/ru/open-interest/BTC"
+  }
 }
