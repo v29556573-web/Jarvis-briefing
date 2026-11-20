@@ -1,9 +1,9 @@
 {
-  "timestamp_utc": "2026-11-19T07:15:43.144362+00:00",
-  "skew_latest": 6.890000000000001,
-  "skew_trailing_mean_14d": 4.558,
-  "skew_trailing_std_14d": 1.4393,
-  "skew_zscore": 1.6203,
+  "timestamp_utc": "2026-11-20T07:15:42.171879+00:00",
+  "skew_latest": 8.96,
+  "skew_trailing_mean_14d": 4.886,
+  "skew_trailing_std_14d": 1.4078,
+  "skew_zscore": 2.894,
   "std_divisor": "n-1",
   "thresholds": {
     "critical": 2.231351,
@@ -16,29 +16,29 @@
     "source": "skew_block_output.json",
     "block_verdict": "SIGNAL_PUT_PREMIUM",
     "block_escalate": false,
-    "block_generated_at_utc": "2026-11-19T07:15:42Z",
+    "block_generated_at_utc": "2026-11-20T07:15:41Z",
     "block_age_hours": 0.0,
     "block_stale": false,
     "reason": "вердикт SIGNAL_PUT_PREMIUM"
   },
   "baseline": {
     "window": 14,
-    "start": "2026-11-05",
-    "end": "2026-11-18",
+    "start": "2026-11-06",
+    "end": "2026-11-19",
     "includes_current": false,
-    "latest_date": "2026-11-19"
+    "latest_date": "2026-11-20"
   },
   "crosscheck": {
-    "funding_rate_pct_8h": 0.009600000000000001,
+    "funding_rate_pct_8h": 0.0021,
     "funding_settled_pct": [
-      0.009600000000000001,
-      0.006,
-      0.0031000000000000003
+      0.0021,
+      0.0017,
+      0.0067
     ],
     "funding_d_pct": [
-      -0.0004,
-      -0.004,
-      -0.0069
+      -0.0079,
+      -0.0083,
+      -0.0033
     ],
     "ls_ratio_latest": "ОТКЛЮЧЕНО",
     "ls_ratio_stable": "ОТКЛЮЧЕНО",
@@ -53,7 +53,7 @@
       {
         "metric": "funding",
         "verdict": "НЕ ЗАЧТЕНО",
-        "detail": "персистентность не выполнена (§10.2): 0.0096% (d -0.0004), 0.0060% (d -0.0040), 0.0031% (d -0.0069)"
+        "detail": "персистентность не выполнена (§10.2): 0.0021% (d -0.0079), 0.0017% (d -0.0083), 0.0067% (d -0.0033)"
       },
       {
         "metric": "ls_ratio",
