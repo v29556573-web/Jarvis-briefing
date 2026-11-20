@@ -3,11 +3,11 @@
     "dominance": {
       "shares_pct": {
         "USDT": 0.0,
-        "USDC": 83.37
+        "USDC": 84.75
       },
-      "grand_total_usd": 5086501687.78
+      "grand_total_usd": 4943493363.8
     },
-    "last_run_utc": "2026-11-19T06:50:43.356707+00:00",
+    "last_run_utc": "2026-11-20T06:50:47.174230+00:00",
     "confirmed_scenario": "NEUTRAL \u2014 \u043d\u0435\u0442 \u0447\u0451\u0442\u043a\u043e\u0433\u043e \u0441\u0438\u0433\u043d\u0430\u043b\u0430 \u043f\u043e \u0442\u0435\u043a\u0443\u0449\u0438\u043c \u043f\u043e\u0440\u043e\u0433\u0430\u043c",
     "runs": [
       {
@@ -1119,18 +1119,28 @@
         "scenario_raw": "NEUTRAL",
         "candidate": "NEUTRAL",
         "confirmed": "NEUTRAL"
+      },
+      {
+        "run_utc": "2026-11-20T06:50:47.174230+00:00",
+        "stable_pct": -4.78,
+        "tvl_pct": -14.71,
+        "native_px_pct": -12.98,
+        "tvl_pct_price_adj": -1.99,
+        "scenario_raw": "NEUTRAL",
+        "candidate": "NEUTRAL",
+        "confirmed": "NEUTRAL"
       }
     ]
   },
   "Solana": {
     "dominance": {
       "shares_pct": {
-        "USDT": 15.09,
-        "USDC": 49.98
+        "USDT": 15.67,
+        "USDC": 50.27
       },
-      "grand_total_usd": 12875137926.31
+      "grand_total_usd": 13223499637.58
     },
-    "last_run_utc": "2026-11-19T06:50:43.356707+00:00",
+    "last_run_utc": "2026-11-20T06:50:47.174230+00:00",
     "confirmed_scenario": "NEUTRAL \u2014 \u043d\u0435\u0442 \u0447\u0451\u0442\u043a\u043e\u0433\u043e \u0441\u0438\u0433\u043d\u0430\u043b\u0430 \u043f\u043e \u0442\u0435\u043a\u0443\u0449\u0438\u043c \u043f\u043e\u0440\u043e\u0433\u0430\u043c",
     "runs": [
       {
@@ -2241,6 +2251,16 @@
         "tvl_pct_price_adj": 6.43,
         "scenario_raw": "NEUTRAL",
         "candidate": "B",
+        "confirmed": "NEUTRAL"
+      },
+      {
+        "run_utc": "2026-11-20T06:50:47.174230+00:00",
+        "stable_pct": -6.47,
+        "tvl_pct": -6.44,
+        "native_px_pct": -10.5,
+        "tvl_pct_price_adj": 4.54,
+        "scenario_raw": "NEUTRAL",
+        "candidate": "NEUTRAL",
         "confirmed": "NEUTRAL"
       }
     ]

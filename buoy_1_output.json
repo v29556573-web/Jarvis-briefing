@@ -1,36 +1,36 @@
 {
-  "timestamp_utc": "2026-11-19T06:50:43.356707+00:00",
+  "timestamp_utc": "2026-11-20T06:50:47.174230+00:00",
   "lookback_days": 7,
   "chains": {
     "Base": {
       "stablecoin_mcap": {
-        "old_usd": 5256828047.0,
-        "new_usd": 5095132515.47,
-        "pct_change": -3.08
+        "old_usd": 5190025272.0,
+        "new_usd": 4942144204.77,
+        "pct_change": -4.78
       },
       "tvl": {
-        "old_usd": 5825152015,
-        "new_usd": 5105979889,
-        "pct_change": -12.35
+        "old_usd": 5669849541,
+        "new_usd": 4835945439,
+        "pct_change": -14.71
       },
       "dominance": {
         "shares_pct": {
           "USDT": 0.0,
-          "USDC": 83.37
+          "USDC": 84.75
         },
-        "grand_total_usd": 5086501687.78
+        "grand_total_usd": 4943493363.8
       },
       "dominance_shift_vs_prev_run_pp": {
         "USDT": 0.0,
-        "USDC": -0.22
+        "USDC": 1.38
       },
       "native_token_price": {
         "coin": "coingecko:ethereum",
-        "old_usd": 2055.371808970753,
-        "new_usd": 1775.10021149601,
-        "pct_change": -13.64
+        "old_usd": 2017.3504775679344,
+        "new_usd": 1755.589817109344,
+        "pct_change": -12.98
       },
-      "tvl_pct_price_adj": 1.49,
+      "tvl_pct_price_adj": -1.99,
       "scenario": "NEUTRAL — нет чёткого сигнала по текущим порогам",
       "scenario_candidate": "NEUTRAL — нет чёткого сигнала по текущим порогам",
       "scenario_raw": "NEUTRAL — нет чёткого сигнала по текущим порогам",
@@ -38,35 +38,35 @@
     },
     "Solana": {
       "stablecoin_mcap": {
-        "old_usd": 14145358326.0,
-        "new_usd": 12970151607.57,
-        "pct_change": -8.31
+        "old_usd": 14295031852.0,
+        "new_usd": 13370681434.33,
+        "pct_change": -6.47
       },
       "tvl": {
-        "old_usd": 5035755485,
-        "new_usd": 4735428898,
-        "pct_change": -5.96
+        "old_usd": 4999238530,
+        "new_usd": 4677108311,
+        "pct_change": -6.44
       },
       "dominance": {
         "shares_pct": {
-          "USDT": 15.09,
-          "USDC": 49.98
+          "USDT": 15.67,
+          "USDC": 50.27
         },
-        "grand_total_usd": 12875137926.31
+        "grand_total_usd": 13223499637.58
       },
       "dominance_shift_vs_prev_run_pp": {
-        "USDT": 0.67,
-        "USDC": -2.43
+        "USDT": 0.58,
+        "USDC": 0.29
       },
       "native_token_price": {
         "coin": "coingecko:solana",
-        "old_usd": 83.24287362653438,
-        "new_usd": 73.55720706519735,
-        "pct_change": -11.64
+        "old_usd": 81.63905511698457,
+        "new_usd": 73.06839267860859,
+        "pct_change": -10.5
       },
-      "tvl_pct_price_adj": 6.43,
+      "tvl_pct_price_adj": 4.54,
       "scenario": "NEUTRAL — нет чёткого сигнала по текущим порогам",
-      "scenario_candidate": "B — ложный рост TVL за счёт цены нативного токена, капитал не заходит",
+      "scenario_candidate": "NEUTRAL — нет чёткого сигнала по текущим порогам",
       "scenario_raw": "NEUTRAL — нет чёткого сигнала по текущим порогам",
       "scenario_basis": "по TVL с поправкой на цену; гистерезис 2 запуска"
     }
