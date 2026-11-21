@@ -1351,5 +1351,22 @@
       2.231351,
       1.608964
     ]
+  },
+  {
+    "date": "2026-11-21",
+    "snapshot_utc": "2026-11-21T07:15:39Z",
+    "skew_pct": 20.17,
+    "z_detrended": 9.087862567019494,
+    "z_classical": 8.503973470473746,
+    "verdict": "CRITICAL_PUT_PREMIUM",
+    "agreement": "AGREE",
+    "escalate": false,
+    "note": "R3′ п.3: обе ноги в полосе C, знак согласован — CRITICAL по старшей ноге (detrend).",
+    "rule": "R3prime-2026-08-28",
+    "formula_version": "v2-corrected-2026-09-12",
+    "thresholds": [
+      2.231351,
+      1.608964
+    ]
   }
 ]
