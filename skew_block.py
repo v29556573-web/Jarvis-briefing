@@ -197,6 +197,12 @@ VERDICT_HISTORY_MAX_RECORDS = 500  # append-only; несколько запис�
 VOL_HISTORY_MAX_DAYS = 1100
 BASELINE_WINDOW = 14  # канон [РЕШЕНИЕ VIKTOR 15.08.2026], единый для skew_crosscheck.py и skew_block.py
 TARGET_DELTA = 0.25
+# [ПАТЧ 22.11.2026] Контроль качества замера: 21–22.11 пут выбран с дельтой
+# −0.09 (страйк 45000) — тикеры промежуточных страйков молча отбрасывались
+# при ошибке get_ticker. Допуск по |delta| и повторы запросов.
+DELTA_TOL = 0.05          # |delta| должна быть в [0.20; 0.30], иначе замер НЕДЕЙСТВИТЕЛЕН
+TICKER_RETRIES = 3
+TICKER_RETRY_SLEEP = 0.5
 TARGET_TENOR_DAYS = 30  # ищем экспирацию ближе всего к 30 дням вперёд
 TIMEOUT = 10
 
@@ -329,10 +335,14 @@ def get_index_price(index_name="btc_usd") -> float | None:
 
 
 def get_ticker(instrument_name):
-    result, err = safe_get(f"{DERIBIT_BASE}/public/ticker", {"instrument_name": instrument_name})
-    if err:
-        return None, err
-    return result, None
+    # [ПАТЧ 22.11.2026] повторы: ошибка одного тикера больше не выбрасывает страйк молча
+    err = None
+    for attempt in range(TICKER_RETRIES):
+        result, err = safe_get(f"{DERIBIT_BASE}/public/ticker", {"instrument_name": instrument_name})
+        if not err and result and "greeks" in result:
+            return result, None
+        time.sleep(TICKER_RETRY_SLEEP * (attempt + 1))
+    return None, err or "no greeks"
 
 
 # ---------------------------------------------------------------------------
@@ -448,6 +458,13 @@ def find_25delta_skew(currency="BTC"):
 
     if not best_call or not best_put:
         return None, "could not find ~25-delta call/put (greeks unavailable)"
+
+    # [ПАТЧ 22.11.2026] Ворота качества: замер вне 25Δ — не замер.
+    # Пишем ошибку (main() не обновляет историю и вердикт), а не CRITICAL.
+    if abs(abs(best_call[2]) - TARGET_DELTA) > DELTA_TOL or abs(abs(best_put[2]) - TARGET_DELTA) > DELTA_TOL:
+        return None, (f"DELTA_OFF_TARGET: call {best_call[0]} d={best_call[2]:.3f}, "
+                      f"put {best_put[0]} d={best_put[2]:.3f}, tol ±{DELTA_TOL}; "
+                      f"tickers tried calls={len(calls)} puts={len(puts)}")
 
     call_name, call_iv, call_delta, call_strike = best_call
     put_name, put_iv, put_delta, put_strike = best_put
@@ -913,6 +930,10 @@ def main():
     # запись, а includes_current:False лгало бы. Чистим ДО расчёта.
     prior_history = [h for h in history if h.get("date") != today]
     rerun_today = len(prior_history) != len(history)
+    # [ПАТЧ 22.11.2026] Точки, помеченные value_type="contaminated" (замер вне
+    # 25Δ, 21–22.11.2026), остаются в файле как след сбоя, но НЕ входят в базу.
+    # Фильтр — ПОСЛЕ rerun_today, иначе флаг повторного прогона станет ложным.
+    prior_history = [h for h in prior_history if h.get("value_type") != "contaminated"]
 
     prior_values = [h["skew"] for h in prior_history]
 

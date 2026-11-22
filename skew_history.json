@@ -530,13 +530,15 @@
   {
     "date": "2026-11-21",
     "skew": 20.169999999999995,
-    "value_type": "eod_close",
-    "source_timestamp": "2026-11-21T07:15:39Z"
+    "value_type": "contaminated",
+    "source_timestamp": "2026-11-21T07:15:39Z",
+    "contamination_note": "put leg off 25-delta: BTC-25DEC26-45000-P delta ~-0.09 (ticker gaps); see claude/JARVIS_oko_skew_strike_audit_2026-11-22.md"
   },
   {
     "date": "2026-11-22",
     "skew": 26.939999999999998,
-    "value_type": "eod_close",
-    "source_timestamp": "2026-11-22T07:15:42Z"
+    "value_type": "contaminated",
+    "source_timestamp": "2026-11-22T07:15:42Z",
+    "contamination_note": "put leg off 25-delta: BTC-25DEC26-45000-P delta ~-0.09 (ticker gaps); see claude/JARVIS_oko_skew_strike_audit_2026-11-22.md"
   }
 ]

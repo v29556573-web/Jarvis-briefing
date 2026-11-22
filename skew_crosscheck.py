@@ -615,6 +615,10 @@ def resolve_gate(block, z, force_check):
 def run(force_check=False):
     timestamp = datetime.now(timezone.utc).isoformat()
     history = load_skew_history()
+    # [ПАТЧ 22.11.2026] та же база, что в skew_block.py: точки
+    # value_type="contaminated" (замер вне 25Δ) в расчёт z не входят.
+    if history:
+        history = [h for h in history if h.get("value_type") != "contaminated"]
     block = load_block_verdict()
 
     zdata = compute_skew_zscore(history) if history else None
