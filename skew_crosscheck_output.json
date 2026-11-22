@@ -1,9 +1,9 @@
 {
-  "timestamp_utc": "2026-11-21T07:15:39.859290+00:00",
-  "skew_latest": 20.169999999999995,
-  "skew_trailing_mean_14d": 5.109,
-  "skew_trailing_std_14d": 1.771,
-  "skew_zscore": 8.504,
+  "timestamp_utc": "2026-11-22T07:15:42.546284+00:00",
+  "skew_latest": 26.939999999999998,
+  "skew_trailing_mean_14d": 6.261,
+  "skew_trailing_std_14d": 4.3666,
+  "skew_zscore": 4.7356,
   "std_divisor": "n-1",
   "thresholds": {
     "critical": 2.231351,
@@ -16,33 +16,33 @@
     "source": "skew_block_output.json",
     "block_verdict": "CRITICAL_PUT_PREMIUM",
     "block_escalate": false,
-    "block_generated_at_utc": "2026-11-21T07:15:39Z",
+    "block_generated_at_utc": "2026-11-22T07:15:42Z",
     "block_age_hours": 0.0,
     "block_stale": false,
     "reason": "вердикт CRITICAL_PUT_PREMIUM"
   },
   "baseline": {
     "window": 14,
-    "start": "2026-11-07",
-    "end": "2026-11-20",
+    "start": "2026-11-08",
+    "end": "2026-11-21",
     "includes_current": false,
-    "latest_date": "2026-11-21"
+    "latest_date": "2026-11-22"
   },
   "crosscheck": {
-    "funding_rate_pct_8h": -0.006,
+    "funding_rate_pct_8h": -0.0026999999999999997,
     "funding_settled_pct": [
-      -0.006,
-      0.0026,
-      0.0007
+      -0.0026999999999999997,
+      0.001,
+      0.0019000000000000002
     ],
     "funding_d_pct": [
-      -0.016,
-      -0.0074,
-      -0.0093
+      -0.0127,
+      -0.009,
+      -0.0081
     ],
     "ls_ratio_latest": "ОТКЛЮЧЕНО",
     "ls_ratio_stable": "ОТКЛЮЧЕНО",
-    "basis_pct": -0.0503,
+    "basis_pct": -0.0396,
     "sources": {
       "funding": "MEXC contract API — 3 последних расчётов (settled), резерв C2",
       "ls_ratio": "ОТКЛЮЧЕНО (акт 01.11.2026)",
@@ -53,7 +53,7 @@
       {
         "metric": "funding",
         "verdict": "НЕ ЗАЧТЕНО",
-        "detail": "d < 0 три расчёта — не голосует ВРЕМЕННО, до калибровки §10.2 [акт 01.11]: -0.0060% (d -0.0160), 0.0026% (d -0.0074), 0.0007% (d -0.0093)"
+        "detail": "d < 0 три расчёта — не голосует ВРЕМЕННО, до калибровки §10.2 [акт 01.11]: -0.0027% (d -0.0127), 0.0010% (d -0.0090), 0.0019% (d -0.0081)"
       },
       {
         "metric": "ls_ratio",
@@ -63,7 +63,7 @@
       {
         "metric": "basis",
         "verdict": "НЕ ЗАЧТЕНО",
-        "detail": "-0.050% — описание; порог 0.5% вычеркнут (§10.5, §12 №35) — [UNRECONCILED], нога не голосует"
+        "detail": "-0.040% — описание; порог 0.5% вычеркнут (§10.5, §12 №35) — [UNRECONCILED], нога не голосует"
       }
     ],
     "overall_verdict": "НЕДОСТАТОЧНО НОГ — голосует 0 из 1; отсутствие тревоги, НЕ подтверждение (в R3′ и PR-18 не читается как подтверждение)",
