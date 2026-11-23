@@ -1,11 +1,5 @@
 [
   {
-    "date": "2026-08-25",
-    "skew": -3.8900000000000006,
-    "value_type": "eod_close",
-    "source_timestamp": "2026-08-25T07:14:57Z"
-  },
-  {
     "date": "2026-08-26",
     "skew": -0.8300000000000054,
     "value_type": "eod_close",
@@ -540,5 +534,11 @@
     "value_type": "contaminated",
     "source_timestamp": "2026-11-22T07:15:42Z",
     "contamination_note": "put leg off 25-delta: BTC-25DEC26-45000-P delta ~-0.09 (ticker gaps); see claude/JARVIS_oko_skew_strike_audit_2026-11-22.md"
+  },
+  {
+    "date": "2026-11-23",
+    "skew": 7.530000000000001,
+    "value_type": "eod_close",
+    "source_timestamp": "2026-11-23T07:16:14Z"
   }
 ]
