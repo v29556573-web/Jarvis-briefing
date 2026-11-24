@@ -1,10 +1,10 @@
 {
-  "generated_utc": "2026-11-20T22:41:27Z",
+  "generated_utc": "2026-11-24T02:55:45Z",
   "source": "ECB EXR reference rates",
   "status": "RATIFIED 18.10.2026 — DXY source for §7.5",
-  "date": "2026-11-20",
-  "dxy_ecb": 103.653,
-  "d5_pct": 0.399,
+  "date": "2026-11-23",
+  "dxy_ecb": 104.087,
+  "d5_pct": 0.597,
   "threshold_pct": 1.5,
   "trigger": false
 }
