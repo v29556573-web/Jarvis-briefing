@@ -1,9 +1,9 @@
 {
-  "timestamp_utc": "2026-11-25T07:16:05.060384+00:00",
-  "skew_latest": 9.950000000000003,
-  "skew_trailing_mean_14d": 5.758,
-  "skew_trailing_std_14d": 2.0292,
-  "skew_zscore": 2.0659,
+  "timestamp_utc": "2026-11-26T07:16:10.508478+00:00",
+  "skew_latest": 7.090000000000003,
+  "skew_trailing_mean_14d": 6.168,
+  "skew_trailing_std_14d": 2.2592,
+  "skew_zscore": 0.4082,
   "std_divisor": "n-1",
   "thresholds": {
     "critical": 2.231351,
@@ -14,35 +14,35 @@
   "critical_breach": true,
   "gate": {
     "source": "skew_block_output.json",
-    "block_verdict": "SIGNAL_PUT_PREMIUM",
+    "block_verdict": "SIGNAL_CALL_PREMIUM",
     "block_escalate": false,
-    "block_generated_at_utc": "2026-11-25T07:16:04Z",
+    "block_generated_at_utc": "2026-11-26T07:16:10Z",
     "block_age_hours": 0.0,
     "block_stale": false,
-    "reason": "вердикт SIGNAL_PUT_PREMIUM"
+    "reason": "вердикт SIGNAL_CALL_PREMIUM"
   },
   "baseline": {
     "window": 14,
-    "start": "2026-11-09",
-    "end": "2026-11-24",
+    "start": "2026-11-10",
+    "end": "2026-11-25",
     "includes_current": false,
-    "latest_date": "2026-11-25"
+    "latest_date": "2026-11-26"
   },
   "crosscheck": {
-    "funding_rate_pct_8h": 0.0072,
+    "funding_rate_pct_8h": 0.008,
     "funding_settled_pct": [
-      0.0072,
-      0.0023,
-      0.0060999999999999995
+      0.008,
+      0.0060999999999999995,
+      0.0071
     ],
     "funding_d_pct": [
-      -0.0028,
-      -0.0077,
-      -0.0039
+      -0.002,
+      -0.0039,
+      -0.0029
     ],
     "ls_ratio_latest": "ОТКЛЮЧЕНО",
     "ls_ratio_stable": "ОТКЛЮЧЕНО",
-    "basis_pct": -0.0461,
+    "basis_pct": -0.0352,
     "sources": {
       "funding": "MEXC contract API — 3 последних расчётов (settled), резерв C2",
       "ls_ratio": "ОТКЛЮЧЕНО (акт 01.11.2026)",
@@ -53,7 +53,7 @@
       {
         "metric": "funding",
         "verdict": "НЕ ЗАЧТЕНО",
-        "detail": "персистентность не выполнена (§10.2): 0.0072% (d -0.0028), 0.0023% (d -0.0077), 0.0061% (d -0.0039)"
+        "detail": "3 расчёта в мёртвой зоне |d|<0.005% (кламп) — не голосует [C.1]: 0.0080% (d -0.0020), 0.0061% (d -0.0039), 0.0071% (d -0.0029)"
       },
       {
         "metric": "ls_ratio",
@@ -63,7 +63,7 @@
       {
         "metric": "basis",
         "verdict": "НЕ ЗАЧТЕНО",
-        "detail": "-0.046% — описание; порог 0.5% вычеркнут (§10.5, §12 №35) — [UNRECONCILED], нога не голосует"
+        "detail": "-0.035% — описание; порог 0.5% вычеркнут (§10.5, §12 №35) — [UNRECONCILED], нога не голосует"
       }
     ],
     "overall_verdict": "НЕДОСТАТОЧНО НОГ — голосует 0 из 1; отсутствие тревоги, НЕ подтверждение (в R3′ и PR-18 не читается как подтверждение)",
